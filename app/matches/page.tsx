@@ -15,41 +15,74 @@ export const revalidate = 30;
 
 async function fetchInitialMatches(): Promise<EnrichedPublicMatch[]> {
   try {
-    const res = await fetch(
-      "https://api.opendota.com/api/publicMatches?mmr_ascending=0",
-      { next: { revalidate: 30 } }
-    );
-    if (!res.ok) return [];
-    const raw = await res.json();
-    if (!Array.isArray(raw)) return [];
+    const { prisma } = await import("@/lib/prisma");
+    const { fetchAllHeroes, heroIconUrl, getGameModeName } = await import("@/lib/opendota");
+    const [heroes, dbRecords] = await Promise.all([
+      fetchAllHeroes(),
+      prisma.dotaMatch.findMany({
+        take: 30,
+        orderBy: { startTime: "desc" },
+      }),
+    ]);
+    const heroMap = new Map(heroes.map((h) => [h.id, h]));
+    const mapHero = (id: number) => {
+      const h = heroMap.get(id);
+      return {
+        hero_id: id,
+        name: h?.localized_name ?? `Герой #${id}`,
+        icon: h ? heroIconUrl(h.name) : null,
+      };
+    };
 
-    return raw
-      .filter((m: any) => m.duration >= 300 && m.radiant_team?.some((h: number) => h > 0) && m.dire_team?.some((h: number) => h > 0))
-      .map((m: any) => ({
-        ...m,
-        radiant_heroes: (m.radiant_team ?? []).map((id: number) => ({
-          hero_id: id,
-          name: `#${id}`,
-          icon: null,
-        })),
-        dire_heroes: (m.dire_team ?? []).map((id: number) => ({
-          hero_id: id,
-          name: `#${id}`,
-          icon: null,
-        })),
-      }));
+    return dbRecords.map((m) => {
+      let players: any[] = [];
+      try {
+        players = typeof m.playersJson === "string" ? JSON.parse(m.playersJson) : m.playersJson;
+      } catch {}
+
+      const radPlayers = players.filter((p) => p.isRadiant ?? (p.player_slot < 128));
+      const direPlayers = players.filter((p) => !(p.isRadiant ?? (p.player_slot < 128)));
+      const radHeroes = radPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+      const direHeroes = direPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+      const isPro = m.lobbyType === 1 || m.gameMode === 2 || Boolean(m.regionName?.toLowerCase().includes("tournament"));
+
+      return {
+        match_id: Number(m.matchId),
+        match_seq_num: 0,
+        radiant_win: m.radiantWin,
+        start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
+        duration: m.duration,
+        lobby_type: m.lobbyType ?? 7,
+        game_mode: m.gameMode ?? 22,
+        game_mode_name: m.gameModeName || getGameModeName(m.gameMode),
+        avg_mmr: isPro ? 8500 : m.gameMode === 22 ? 6200 : null,
+        num_mmr: 10,
+        avg_rank_tier: isPro ? 80 : m.gameMode === 22 ? 65 : 45,
+        radiant_team: radHeroes,
+        dire_team: direHeroes,
+        radiant_score: m.radiantScore,
+        dire_score: m.direScore,
+        radiant_name: "Radiant",
+        dire_name: "Dire",
+        is_pro: isPro,
+        radiant_heroes: radHeroes.map(mapHero),
+        dire_heroes: direHeroes.map(mapHero),
+      };
+    });
   } catch {
     return [];
   }
 }
 
 export default async function MatchesPage() {
+  const initialMatches = await fetchInitialMatches();
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-zinc-800">
       <SiteHeader currentPath="/matches" />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <LiveMatchesView initialMatches={[]} />
+        <LiveMatchesView initialMatches={initialMatches} />
       </main>
 
       <SiteFooter />

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllHeroes, heroIconUrl, getGameModeName } from "@/lib/opendota";
-
-const OPENDOTA_BASE = "https://api.opendota.com/api";
+import { fetchAllHeroes, heroIconUrl, getGameModeName, isRateLimitExceeded, safeOpenDotaFetch } from "@/lib/opendota";
+import { prisma } from "@/lib/prisma";
 
 export type PublicMatch = {
   match_id: number;
@@ -30,18 +29,12 @@ export type EnrichedPublicMatch = PublicMatch & {
   dire_heroes: { hero_id: number; name: string; icon: string | null }[];
 };
 
-// Memory cache for pro match details (cache for 3 minutes)
-let proMatchesCache: {
-  timestamp: number;
-  matches: EnrichedPublicMatch[];
-} | null = null;
-
-const CACHE_TTL_MS = 3 * 60 * 1000;
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const category = searchParams.get("category") ?? "all"; // 'all', 'pro', 'ranked'
+    const category = searchParams.get("category") ?? "all"; // 'all', 'ranked', 'turbo', 'pro', 'normal'
+    const limitParam = Number(searchParams.get("limit") || 50);
+    const limit = Math.min(Math.max(limitParam, 10), 100);
 
     const heroes = await fetchAllHeroes();
     const heroMap = new Map(heroes.map((h) => [h.id, h]));
@@ -55,191 +48,171 @@ export async function GET(req: NextRequest) {
       };
     };
 
-    // 1. Fetch real professional tournament matches
-    let proMatches: EnrichedPublicMatch[] = [];
-    const now = Date.now();
-
-    if (proMatchesCache && now - proMatchesCache.timestamp < CACHE_TTL_MS) {
-      proMatches = proMatchesCache.matches;
-    } else {
-      try {
-        const proRes = await fetch(`${OPENDOTA_BASE}/proMatches`, {
-          next: { revalidate: 180 },
-        });
-
-        if (proRes.ok) {
-          const proList: any[] = await proRes.json();
-          const topCandidates = (Array.isArray(proList) ? proList : [])
-            .filter((m) => m.match_id && m.duration >= 900)
-            .slice(0, 10);
-
-          // Fetch full details for the top pro matches in parallel
-          const detailsList = await Promise.all(
-            topCandidates.map(async (pm) => {
-              try {
-                const dRes = await fetch(`${OPENDOTA_BASE}/matches/${pm.match_id}`, {
-                  next: { revalidate: 1800 },
-                });
-                if (dRes.ok) return await dRes.json();
-              } catch {
-                return null;
-              }
-              return null;
-            })
-          );
-
-          proMatches = detailsList
-            .filter((d) => d && Array.isArray(d.players) && d.players.length === 10)
-            .map((d) => {
-              const radPlayers = d.players.filter((p: any) => p.player_slot < 128);
-              const direPlayers = d.players.filter((p: any) => p.player_slot >= 128);
-
-              const radHeroes = radPlayers.map((p: any) => p.hero_id);
-              const direHeroes = direPlayers.map((p: any) => p.hero_id);
-
-              return {
-                match_id: d.match_id,
-                match_seq_num: d.match_seq_num ?? 0,
-                radiant_win: d.radiant_win,
-                start_time: d.start_time,
-                duration: d.duration,
-                lobby_type: 1, // Tournament
-                game_mode: 2, // Captain's Mode
-                game_mode_name: d.league?.name ? `Турнир: ${d.league.name}` : "Captain's Mode",
-                avg_mmr: 8000,
-                num_mmr: 10,
-                avg_rank_tier: 80, // Immortal
-                radiant_team: radHeroes,
-                dire_team: direHeroes,
-                radiant_score: d.radiant_score ?? 0,
-                dire_score: d.dire_score ?? 0,
-                radiant_name: d.radiant_name || "Radiant",
-                dire_name: d.dire_name || "Dire",
-                league_name: d.league?.name,
-                is_pro: true,
-                radiant_heroes: radHeroes.map(mapHero),
-                dire_heroes: direHeroes.map(mapHero),
-              };
-            });
-
-          if (proMatches.length > 0) {
-            proMatchesCache = { timestamp: now, matches: proMatches };
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching pro matches in live-matches route:", err);
-      }
+    // 1. Build database where clause based on requested category
+    const whereClause: any = {};
+    if (category === "ranked") {
+      whereClause.gameMode = 22; // Ranked All Pick
+    } else if (category === "turbo") {
+      whereClause.gameMode = 23; // Turbo
+    } else if (category === "pro") {
+      whereClause.OR = [
+        { gameMode: 2 }, // Captain's Mode
+        { lobbyType: 1 }, // Tournament
+        { gameModeName: { contains: "Captain" } },
+      ];
+    } else if (category === "normal") {
+      whereClause.gameMode = { notIn: [2, 22, 23] };
     }
 
-    // 2. Fetch verified high-MMR public matches (filter out Turbo, 1v1, bot games, remakes)
-    let publicRankedMatches: EnrichedPublicMatch[] = [];
-    try {
-      const pubRes = await fetch(
-        `${OPENDOTA_BASE}/publicMatches?mmr_ascending=0`,
-        { next: { revalidate: 45 } }
+    // 2. Fetch matches from local SQLite database (over 750 matches stored)
+    const dbRecords = await prisma.dotaMatch.findMany({
+      where: whereClause,
+      take: limit,
+      orderBy: { startTime: "desc" },
+    });
+
+    const enrichedDbMatches: EnrichedPublicMatch[] = dbRecords.map((m) => {
+      let players: any[] = [];
+      try {
+        players = typeof m.playersJson === "string" ? JSON.parse(m.playersJson) : m.playersJson;
+      } catch {}
+
+      const radPlayers = players.filter((p) => p.isRadiant ?? (p.player_slot < 128));
+      const direPlayers = players.filter((p) => !(p.isRadiant ?? (p.player_slot < 128)));
+
+      const radHeroes = radPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+      const direHeroes = direPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+
+      const isPro = Boolean(
+        m.lobbyType === 1 ||
+        m.gameMode === 2 ||
+        m.regionName?.toLowerCase().includes("tournament") ||
+        m.gameModeName?.toLowerCase().includes("captain")
       );
 
-      if (pubRes.ok) {
-        const raw: any[] = await pubRes.json();
-        if (Array.isArray(raw)) {
-          publicRankedMatches = raw
-            .filter(
-              (m) =>
-                m.duration >= 900 && // >= 15 minutes (no 5m remakes)
-                m.game_mode !== 23 && // strictly NO TURBO!
-                m.game_mode !== 21 && // strictly NO 1v1!
-                m.lobby_type !== 4 && // strictly NO bot games!
-                Array.isArray(m.radiant_team) &&
-                m.radiant_team.length === 5 &&
-                m.radiant_team.every((h: number) => h > 0) &&
-                Array.isArray(m.dire_team) &&
-                m.dire_team.length === 5 &&
-                m.dire_team.every((h: number) => h > 0)
-            )
-            .map((m) => ({
-              ...m,
-              game_mode_name: getGameModeName(m.game_mode),
-              is_pro: false,
-              radiant_heroes: m.radiant_team.map(mapHero),
-              dire_heroes: m.dire_team.map(mapHero),
-            }));
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching public matches in live-matches route:", err);
-    }
+      // Estimate avg rank tier and MMR
+      const rankTiers = players
+        .map((p) => p.rank_tier)
+        .filter((r) => typeof r === "number" && r > 0);
+      const avgRankTier =
+        rankTiers.length > 0
+          ? Math.round(rankTiers.reduce((a, b) => a + b, 0) / rankTiers.length)
+          : isPro
+          ? 80
+          : m.gameMode === 22
+          ? 65
+          : 45;
 
-    // Combined list: Pro tournament matches first, then valid ranked matches
-    let finalMatches: EnrichedPublicMatch[] = [];
-    if (category === "pro") {
-      finalMatches = proMatches;
-    } else if (category === "ranked") {
-      finalMatches = publicRankedMatches;
-    } else {
-      finalMatches = [...proMatches, ...publicRankedMatches];
-    }
+      const mmrs = players
+        .map((p) => p.computed_mmr)
+        .filter((val) => typeof val === "number" && val > 0);
+      const avgMmr =
+        mmrs.length > 0
+          ? Math.round(mmrs.reduce((a, b) => a + b, 0) / mmrs.length)
+          : isPro
+          ? 8500
+          : m.gameMode === 22
+          ? 6200
+          : null;
 
-    // Database fallback if external API is empty or rate-limited
-    if (finalMatches.length === 0) {
+      // Detect notable players or team names
+      const radTopPlayer = radPlayers.find(
+        (p) => p.personaname && p.personaname !== "Anonymous" && p.personaname !== "Игрок"
+      );
+      const direTopPlayer = direPlayers.find(
+        (p) => p.personaname && p.personaname !== "Anonymous" && p.personaname !== "Игрок"
+      );
+
+      return {
+        match_id: Number(m.matchId),
+        match_seq_num: 0,
+        radiant_win: m.radiantWin,
+        start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
+        duration: m.duration,
+        lobby_type: m.lobbyType ?? 7,
+        game_mode: m.gameMode ?? 22,
+        game_mode_name: m.gameModeName || getGameModeName(m.gameMode),
+        avg_mmr: avgMmr,
+        num_mmr: 10,
+        avg_rank_tier: avgRankTier,
+        radiant_team: radHeroes,
+        dire_team: direHeroes,
+        radiant_score: m.radiantScore,
+        dire_score: m.direScore,
+        radiant_name: isPro ? "Radiant" : radTopPlayer ? radTopPlayer.personaname : "Radiant",
+        dire_name: isPro ? "Dire" : direTopPlayer ? direTopPlayer.personaname : "Dire",
+        is_pro: isPro,
+        radiant_heroes: radHeroes.map(mapHero),
+        dire_heroes: direHeroes.map(mapHero),
+      };
+    });
+
+    // 3. If external API is accessible and category allows, optionally fetch fresh public games
+    let freshPublicMatches: EnrichedPublicMatch[] = [];
+    if (!isRateLimitExceeded() && (category === "all" || category === "ranked")) {
       try {
-        const { prisma } = await import("@/lib/prisma");
-        const dbMatches = await prisma.dotaMatch.findMany({
-          take: 30,
-          orderBy: { startTime: "desc" },
-        });
+        const pubRes = await safeOpenDotaFetch("/publicMatches?mmr_ascending=0", {
+          next: { revalidate: 60 },
+        }, 1800);
+        if (pubRes && pubRes.ok) {
+          const raw: any[] = await pubRes.json();
+          if (Array.isArray(raw)) {
+            freshPublicMatches = raw
+              .filter(
+                (m) =>
+                  m.duration >= 900 &&
+                  Array.isArray(m.radiant_team) &&
+                  m.radiant_team.length === 5 &&
+                  Array.isArray(m.dire_team) &&
+                  m.dire_team.length === 5
+              )
+              .slice(0, 10)
+              .map((m) => ({
+                ...m,
+                game_mode_name: getGameModeName(m.game_mode),
+                is_pro: false,
+                radiant_heroes: m.radiant_team.map(mapHero),
+                dire_heroes: m.dire_team.map(mapHero),
+              }));
+          }
+        }
+      } catch {}
+    }
 
-        finalMatches = dbMatches.map((m) => {
-          let players: any[] = [];
-          try {
-            players = typeof m.playersJson === "string" ? JSON.parse(m.playersJson) : m.playersJson;
-          } catch {}
+    // Merge: fresh matches on top, then existing diverse DB matches
+    const seenMatchIds = new Set<number>();
+    const combined: EnrichedPublicMatch[] = [];
 
-          const radPlayers = players.filter((p) => p.player_slot < 128);
-          const direPlayers = players.filter((p) => p.player_slot >= 128);
+    for (const m of freshPublicMatches) {
+      if (!seenMatchIds.has(m.match_id)) {
+        seenMatchIds.add(m.match_id);
+        combined.push(m);
+      }
+    }
 
-          const radHeroes = radPlayers.map((p) => p.hero_id || 0).filter(Boolean);
-          const direHeroes = direPlayers.map((p) => p.hero_id || 0).filter(Boolean);
-
-          return {
-            match_id: Number(m.matchId),
-            match_seq_num: 0,
-            radiant_win: m.radiantWin,
-            start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
-            duration: m.duration,
-            lobby_type: m.lobbyType ?? 7,
-            game_mode: m.gameMode ?? 22,
-            game_mode_name: m.gameModeName || "Ranked All Pick",
-            avg_mmr: 6500,
-            num_mmr: 10,
-            avg_rank_tier: 80,
-            radiant_team: radHeroes,
-            dire_team: direHeroes,
-            radiant_score: m.radiantScore,
-            dire_score: m.direScore,
-            radiant_name: "Radiant",
-            dire_name: "Dire",
-            is_pro: false,
-            radiant_heroes: radHeroes.map(mapHero),
-            dire_heroes: direHeroes.map(mapHero),
-          };
-        });
-      } catch (err) {
-        console.warn("Could not query DB fallback matches:", err);
+    for (const m of enrichedDbMatches) {
+      if (!seenMatchIds.has(m.match_id)) {
+        seenMatchIds.add(m.match_id);
+        combined.push(m);
       }
     }
 
     return NextResponse.json(
-      { matches: finalMatches, fetchedAt: Date.now() },
+      {
+        matches: combined,
+        fetchedAt: Date.now(),
+        total: combined.length,
+      },
       {
         headers: {
-          "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+          "Cache-Control": "public, max-age=15, stale-while-revalidate=45",
         },
       }
     );
   } catch (error: any) {
     console.error("/api/live-matches error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal error" },
+      { error: error?.message || "Internal error", matches: [] },
       { status: 500 }
     );
   }

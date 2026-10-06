@@ -593,9 +593,16 @@ function MatchCard({ match }: { match: EnrichedPublicMatch }) {
             <Clock className="w-3 h-3 text-zinc-500" />
             {fmtDuration(match.duration)}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-            <Zap className="w-3 h-3 text-blue-400" />
-            {match.is_pro ? "Про-турнир" : match.game_mode_name}
+          <div className="flex items-center gap-1.5 text-[11px]">
+            {match.game_mode === 23 ? (
+              <span className="text-amber-400 font-medium">⚡ Turbo</span>
+            ) : match.game_mode === 22 ? (
+              <span className="text-emerald-400 font-medium">🛡️ Ranked AP</span>
+            ) : match.is_pro || match.game_mode === 2 ? (
+              <span className="text-purple-400 font-medium">🏆 Про-турнир</span>
+            ) : (
+              <span className="text-zinc-300 font-medium">⚔️ {match.game_mode_name}</span>
+            )}
           </div>
           {match.avg_rank_tier != null && (
             <div
@@ -688,9 +695,10 @@ interface LiveMatchesViewProps {
 
 const GAME_MODE_OPTIONS = [
   { value: "all", label: "Все матчи" },
-  { value: "pro", label: "🏆 Про-турниры" },
   { value: "22", label: "🛡️ Ranked All Pick" },
-  { value: "2", label: "⚔️ Captain's Mode" },
+  { value: "23", label: "⚡ Turbo" },
+  { value: "pro", label: "🏆 Про-сцена" },
+  { value: "normal", label: "⚔️ Обычные игры" },
 ];
 
 export default function LiveMatchesView({
@@ -708,7 +716,7 @@ export default function LiveMatchesView({
   const fetchMatches = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/live-matches");
+      const res = await fetch("/api/live-matches?limit=80");
       if (res.ok) {
         const json = await res.json();
         if (Array.isArray(json.matches)) {
@@ -725,6 +733,7 @@ export default function LiveMatchesView({
 
   // Background refresh every 60s
   useEffect(() => {
+    fetchMatches();
     intervalRef.current = setInterval(() => {
       fetchMatches();
     }, 60_000);
@@ -736,9 +745,10 @@ export default function LiveMatchesView({
 
   // Apply filters client-side
   const filteredMatches = matches.filter((m) => {
-    if (filterMode === "pro" && !m.is_pro) return false;
+    if (filterMode === "pro" && !m.is_pro && m.game_mode !== 2) return false;
     if (filterMode === "22" && m.game_mode !== 22) return false;
-    if (filterMode === "2" && m.game_mode !== 2) return false;
+    if (filterMode === "23" && m.game_mode !== 23) return false;
+    if (filterMode === "normal" && (m.game_mode === 22 || m.game_mode === 23 || m.is_pro || m.game_mode === 2)) return false;
     if (filterResult === "radiant" && !m.radiant_win) return false;
     if (filterResult === "dire" && m.radiant_win) return false;
     return true;
@@ -761,7 +771,7 @@ export default function LiveMatchesView({
             </span>
           </div>
           <p className="text-xs text-zinc-400 font-mono">
-            High MMR & Про-сцена · {filteredMatches.length} игр
+            Рейтинг, Турбо, Про-игры и Паблики · {filteredMatches.length} игр
           </p>
         </div>
 
