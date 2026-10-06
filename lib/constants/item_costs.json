@@ -1,0 +1,2006 @@
+{
+  "1": {
+    "cost": 2250,
+    "dname": "Blink Dagger"
+  },
+  "2": {
+    "cost": 450,
+    "dname": "Blades of Attack"
+  },
+  "3": {
+    "cost": 1000,
+    "dname": "Broadsword"
+  },
+  "4": {
+    "cost": 500,
+    "dname": "Chainmail"
+  },
+  "5": {
+    "cost": 1350,
+    "dname": "Claymore"
+  },
+  "6": {
+    "cost": 975,
+    "dname": "Helm of Iron Will"
+  },
+  "7": {
+    "cost": 900,
+    "dname": "Javelin"
+  },
+  "8": {
+    "cost": 1600,
+    "dname": "Mithril Hammer"
+  },
+  "9": {
+    "cost": 1400,
+    "dname": "Platemail"
+  },
+  "10": {
+    "cost": 875,
+    "dname": "Quarterstaff"
+  },
+  "11": {
+    "cost": 100,
+    "dname": "Quelling Blade"
+  },
+  "12": {
+    "cost": 175,
+    "dname": "Ring of Protection"
+  },
+  "13": {
+    "cost": 140,
+    "dname": "Gauntlets of Strength"
+  },
+  "14": {
+    "cost": 140,
+    "dname": "Slippers of Agility"
+  },
+  "15": {
+    "cost": 140,
+    "dname": "Mantle of Intelligence"
+  },
+  "16": {
+    "cost": 55,
+    "dname": "Iron Branch"
+  },
+  "17": {
+    "cost": 450,
+    "dname": "Belt of Strength"
+  },
+  "18": {
+    "cost": 450,
+    "dname": "Band of Elvenskin"
+  },
+  "19": {
+    "cost": 450,
+    "dname": "Robe of the Magi"
+  },
+  "20": {
+    "cost": 155,
+    "dname": "Circlet"
+  },
+  "21": {
+    "cost": 1000,
+    "dname": "Ogre Axe"
+  },
+  "22": {
+    "cost": 1000,
+    "dname": "Blade of Alacrity"
+  },
+  "23": {
+    "cost": 1000,
+    "dname": "Staff of Wizardry"
+  },
+  "24": {
+    "cost": 2800,
+    "dname": "Ultimate Orb"
+  },
+  "25": {
+    "cost": 450,
+    "dname": "Gloves of Haste"
+  },
+  "26": {
+    "cost": 900,
+    "dname": "Morbid Mask"
+  },
+  "27": {
+    "cost": 175,
+    "dname": "Ring of Regen"
+  },
+  "28": {
+    "cost": 175,
+    "dname": "Sage's Mask"
+  },
+  "29": {
+    "cost": 500,
+    "dname": "Boots of Speed"
+  },
+  "30": {
+    "cost": 900,
+    "dname": "Gem of True Sight"
+  },
+  "31": {
+    "cost": 900,
+    "dname": "Cloak"
+  },
+  "32": {
+    "cost": 1300,
+    "dname": "Talisman of Evasion"
+  },
+  "33": {
+    "cost": 1000,
+    "dname": "Cheese"
+  },
+  "34": {
+    "cost": 200,
+    "dname": "Magic Stick"
+  },
+  "35": {
+    "cost": 150,
+    "dname": "Magic Wand Recipe"
+  },
+  "36": {
+    "cost": 460,
+    "dname": "Magic Wand"
+  },
+  "37": {
+    "cost": 1500,
+    "dname": "Ghost Scepter"
+  },
+  "38": {
+    "cost": 60,
+    "dname": "Clarity"
+  },
+  "39": {
+    "cost": 100,
+    "dname": "Healing Salve"
+  },
+  "40": {
+    "cost": 80,
+    "dname": "Dust of Appearance"
+  },
+  "41": {
+    "cost": 675,
+    "dname": "Bottle"
+  },
+  "42": {
+    "cost": 0,
+    "dname": "Observer Ward"
+  },
+  "43": {
+    "cost": 50,
+    "dname": "Sentry Ward"
+  },
+  "44": {
+    "cost": 90,
+    "dname": "Tango"
+  },
+  "45": {
+    "cost": 50,
+    "dname": "Animal Courier"
+  },
+  "46": {
+    "cost": 100,
+    "dname": "Town Portal Scroll"
+  },
+  "47": {
+    "cost": 2000,
+    "dname": "Boots of Travel Recipe"
+  },
+  "48": {
+    "cost": 2500,
+    "dname": "Boots of Travel"
+  },
+  "50": {
+    "cost": 1450,
+    "dname": "Phase Boots"
+  },
+  "51": {
+    "cost": 2200,
+    "dname": "Demon Edge"
+  },
+  "52": {
+    "cost": 2800,
+    "dname": "Eaglesong"
+  },
+  "53": {
+    "cost": 2800,
+    "dname": "Reaver"
+  },
+  "54": {
+    "cost": 3400,
+    "dname": "Sacred Relic"
+  },
+  "55": {
+    "cost": 2000,
+    "dname": "Hyperstone"
+  },
+  "56": {
+    "cost": 700,
+    "dname": "Ring of Health"
+  },
+  "57": {
+    "cost": 700,
+    "dname": "Void Stone"
+  },
+  "58": {
+    "cost": 2800,
+    "dname": "Mystic Staff"
+  },
+  "59": {
+    "cost": 800,
+    "dname": "Energy Booster"
+  },
+  "60": {
+    "cost": 1200,
+    "dname": "Point Booster"
+  },
+  "61": {
+    "cost": 1000,
+    "dname": "Vitality Booster"
+  },
+  "63": {
+    "cost": 1400,
+    "dname": "Power Treads"
+  },
+  "64": {
+    "cost": 1750,
+    "dname": "Hand of Midas Recipe"
+  },
+  "65": {
+    "cost": 2200,
+    "dname": "Hand of Midas"
+  },
+  "67": {
+    "cost": 1625,
+    "dname": "Oblivion Staff"
+  },
+  "69": {
+    "cost": 1400,
+    "dname": "Perseverance"
+  },
+  "71": {
+    "cost": 0,
+    "dname": "Poor Man's Shield"
+  },
+  "72": {
+    "cost": 210,
+    "dname": "Bracer Recipe"
+  },
+  "73": {
+    "cost": 505,
+    "dname": "Bracer"
+  },
+  "74": {
+    "cost": 210,
+    "dname": "Wraith Band Recipe"
+  },
+  "75": {
+    "cost": 505,
+    "dname": "Wraith Band"
+  },
+  "76": {
+    "cost": 210,
+    "dname": "Null Talisman Recipe"
+  },
+  "77": {
+    "cost": 505,
+    "dname": "Null Talisman"
+  },
+  "78": {
+    "cost": 850,
+    "dname": "Mekansm Recipe"
+  },
+  "79": {
+    "cost": 1775,
+    "dname": "Mekansm"
+  },
+  "81": {
+    "cost": 2200,
+    "dname": "Vladmir's Offering"
+  },
+  "85": {
+    "cost": 250,
+    "dname": "Buckler Recipe"
+  },
+  "86": {
+    "cost": 425,
+    "dname": "Buckler"
+  },
+  "87": {
+    "cost": 250,
+    "dname": "Ring of Basilius Recipe"
+  },
+  "88": {
+    "cost": 425,
+    "dname": "Ring of Basilius"
+  },
+  "89": {
+    "cost": 675,
+    "dname": "Pipe of Insight Recipe"
+  },
+  "90": {
+    "cost": 3725,
+    "dname": "Pipe of Insight"
+  },
+  "91": {
+    "cost": 320,
+    "dname": "Urn of Shadows Recipe"
+  },
+  "92": {
+    "cost": 825,
+    "dname": "Urn of Shadows"
+  },
+  "93": {
+    "cost": 250,
+    "dname": "Headdress Recipe"
+  },
+  "94": {
+    "cost": 425,
+    "dname": "Headdress"
+  },
+  "95": {
+    "cost": 700,
+    "dname": "Scythe of Vyse Recipe"
+  },
+  "96": {
+    "cost": 5200,
+    "dname": "Scythe of Vyse"
+  },
+  "97": {
+    "cost": 300,
+    "dname": "Orchid Malevolence Recipe"
+  },
+  "98": {
+    "cost": 3275,
+    "dname": "Orchid Malevolence"
+  },
+  "99": {
+    "cost": 675,
+    "dname": "Eul's Scepter Recipe"
+  },
+  "100": {
+    "cost": 2600,
+    "dname": "Eul's Scepter of Divinity"
+  },
+  "101": {
+    "cost": 950,
+    "dname": "Force Staff Recipe"
+  },
+  "102": {
+    "cost": 2200,
+    "dname": "Force Staff"
+  },
+  "103": {
+    "cost": 1150,
+    "dname": "Dagon Recipe"
+  },
+  "104": {
+    "cost": 3050,
+    "dname": "Dagon"
+  },
+  "105": {
+    "cost": 1250,
+    "dname": "Necronomicon Recipe"
+  },
+  "106": {
+    "cost": 2050,
+    "dname": "Necronomicon"
+  },
+  "108": {
+    "cost": 4200,
+    "dname": "Aghanim's Scepter"
+  },
+  "109": {
+    "cost": 1600,
+    "dname": "Refresher Orb Recipe"
+  },
+  "110": {
+    "cost": 5000,
+    "dname": "Refresher Orb"
+  },
+  "111": {
+    "cost": 1300,
+    "dname": "Assault Cuirass Recipe"
+  },
+  "112": {
+    "cost": 5125,
+    "dname": "Assault Cuirass"
+  },
+  "113": {
+    "cost": 600,
+    "dname": "Heart of Tarrasque Recipe"
+  },
+  "114": {
+    "cost": 5100,
+    "dname": "Heart of Tarrasque"
+  },
+  "115": {
+    "cost": 1450,
+    "dname": "Black King Bar Recipe"
+  },
+  "116": {
+    "cost": 4050,
+    "dname": "Black King Bar"
+  },
+  "117": {
+    "cost": 0,
+    "dname": "Aegis of the Immortal"
+  },
+  "118": {
+    "cost": 1350,
+    "dname": "Shiva's Guard Recipe"
+  },
+  "119": {
+    "cost": 4500,
+    "dname": "Shiva's Guard"
+  },
+  "121": {
+    "cost": 4700,
+    "dname": "Bloodstone"
+  },
+  "122": {
+    "cost": 600,
+    "dname": "Linken's Sphere Recipe"
+  },
+  "123": {
+    "cost": 4800,
+    "dname": "Linken's Sphere"
+  },
+  "125": {
+    "cost": 1700,
+    "dname": "Vanguard"
+  },
+  "126": {
+    "cost": 450,
+    "dname": "Blade Mail Recipe"
+  },
+  "127": {
+    "cost": 2400,
+    "dname": "Blade Mail"
+  },
+  "129": {
+    "cost": 3000,
+    "dname": "Soul Booster"
+  },
+  "131": {
+    "cost": 0,
+    "dname": "Hood of Defiance"
+  },
+  "133": {
+    "cost": 5600,
+    "dname": "Divine Rapier"
+  },
+  "134": {
+    "cost": 900,
+    "dname": "Monkey King Bar Recipe"
+  },
+  "135": {
+    "cost": 5000,
+    "dname": "Monkey King Bar"
+  },
+  "137": {
+    "cost": 4700,
+    "dname": "Radiance"
+  },
+  "139": {
+    "cost": 5450,
+    "dname": "Butterfly"
+  },
+  "140": {
+    "cost": 900,
+    "dname": "Daedalus Recipe"
+  },
+  "141": {
+    "cost": 5100,
+    "dname": "Daedalus"
+  },
+  "142": {
+    "cost": 825,
+    "dname": "Skull Basher Recipe"
+  },
+  "143": {
+    "cost": 2875,
+    "dname": "Skull Basher"
+  },
+  "144": {
+    "cost": 400,
+    "dname": "Battle Fury Recipe"
+  },
+  "145": {
+    "cost": 3900,
+    "dname": "Battle Fury"
+  },
+  "146": {
+    "cost": 1550,
+    "dname": "Manta Style Recipe"
+  },
+  "147": {
+    "cost": 4650,
+    "dname": "Manta Style"
+  },
+  "148": {
+    "cost": 200,
+    "dname": "Crystalys Recipe"
+  },
+  "149": {
+    "cost": 2000,
+    "dname": "Crystalys"
+  },
+  "150": {
+    "cost": 625,
+    "dname": "Armlet of Mordiggian Recipe"
+  },
+  "151": {
+    "cost": 2500,
+    "dname": "Armlet of Mordiggian"
+  },
+  "152": {
+    "cost": 3250,
+    "dname": "Shadow Blade"
+  },
+  "154": {
+    "cost": 4200,
+    "dname": "Sange and Yasha"
+  },
+  "156": {
+    "cost": 5050,
+    "dname": "Satanic"
+  },
+  "157": {
+    "cost": 550,
+    "dname": "Mjollnir Recipe"
+  },
+  "158": {
+    "cost": 5500,
+    "dname": "Mjollnir"
+  },
+  "160": {
+    "cost": 5900,
+    "dname": "Eye of Skadi"
+  },
+  "161": {
+    "cost": 650,
+    "dname": "Sange Recipe"
+  },
+  "162": {
+    "cost": 2100,
+    "dname": "Sange"
+  },
+  "163": {
+    "cost": 1125,
+    "dname": "Helm of the Dominator Recipe"
+  },
+  "164": {
+    "cost": 2550,
+    "dname": "Helm of the Dominator"
+  },
+  "166": {
+    "cost": 2950,
+    "dname": "Maelstrom"
+  },
+  "168": {
+    "cost": 3500,
+    "dname": "Desolator"
+  },
+  "169": {
+    "cost": 650,
+    "dname": "Yasha Recipe"
+  },
+  "170": {
+    "cost": 2100,
+    "dname": "Yasha"
+  },
+  "172": {
+    "cost": 1900,
+    "dname": "Mask of Madness"
+  },
+  "173": {
+    "cost": 1050,
+    "dname": "Diffusal Blade Recipe"
+  },
+  "174": {
+    "cost": 2500,
+    "dname": "Diffusal Blade"
+  },
+  "175": {
+    "cost": 900,
+    "dname": "Ethereal Blade Recipe"
+  },
+  "176": {
+    "cost": 5200,
+    "dname": "Ethereal Blade"
+  },
+  "177": {
+    "cost": 350,
+    "dname": "Soul Ring Recipe"
+  },
+  "178": {
+    "cost": 805,
+    "dname": "Soul Ring"
+  },
+  "179": {
+    "cost": 325,
+    "dname": "Arcane Boots Recipe"
+  },
+  "180": {
+    "cost": 1500,
+    "dname": "Arcane Boots"
+  },
+  "181": {
+    "cost": 350,
+    "dname": "Orb of Venom"
+  },
+  "182": {
+    "cost": 100,
+    "dname": "Stout Shield"
+  },
+  "184": {
+    "cost": 525,
+    "dname": "Drum of Endurance Recipe"
+  },
+  "185": {
+    "cost": 1625,
+    "dname": "Drum of Endurance"
+  },
+  "187": {
+    "cost": 0,
+    "dname": "Medallion of Courage"
+  },
+  "188": {
+    "cost": 50,
+    "dname": "Smoke of Deceit"
+  },
+  "189": {
+    "cost": 350,
+    "dname": "Veil of Discord Recipe"
+  },
+  "190": {
+    "cost": 1700,
+    "dname": "Veil of Discord"
+  },
+  "193": {
+    "cost": 3300,
+    "dname": "Necronomicon"
+  },
+  "194": {
+    "cost": 4550,
+    "dname": "Necronomicon"
+  },
+  "196": {
+    "cost": 3850,
+    "dname": "Diffusal Blade"
+  },
+  "201": {
+    "cost": 4200,
+    "dname": "Dagon"
+  },
+  "202": {
+    "cost": 5350,
+    "dname": "Dagon"
+  },
+  "203": {
+    "cost": 6500,
+    "dname": "Dagon"
+  },
+  "204": {
+    "cost": 7650,
+    "dname": "Dagon"
+  },
+  "205": {
+    "cost": 250,
+    "dname": "Rod of Atos Recipe"
+  },
+  "206": {
+    "cost": 2250,
+    "dname": "Rod of Atos"
+  },
+  "207": {
+    "cost": 1275,
+    "dname": "Abyssal Blade Recipe"
+  },
+  "208": {
+    "cost": 6250,
+    "dname": "Abyssal Blade"
+  },
+  "209": {
+    "cost": 450,
+    "dname": "Heaven's Halberd Recipe"
+  },
+  "210": {
+    "cost": 3400,
+    "dname": "Heaven's Halberd"
+  },
+  "212": {
+    "cost": 0,
+    "dname": "Ring of Aquila"
+  },
+  "214": {
+    "cost": 900,
+    "dname": "Tranquil Boots"
+  },
+  "215": {
+    "cost": 900,
+    "dname": "Shadow Amulet"
+  },
+  "216": {
+    "cost": 65,
+    "dname": "Enchanted Mango"
+  },
+  "218": {
+    "cost": 50,
+    "dname": "Observer and Sentry Wards"
+  },
+  "220": {
+    "cost": 4500,
+    "dname": "Boots of Travel 2"
+  },
+  "221": {
+    "cost": 250,
+    "dname": "Lotus Orb Recipe"
+  },
+  "222": {
+    "cost": 300,
+    "dname": "Meteor Hammer Recipe"
+  },
+  "223": {
+    "cost": 2850,
+    "dname": "Meteor Hammer"
+  },
+  "225": {
+    "cost": 4350,
+    "dname": "Nullifier"
+  },
+  "226": {
+    "cost": 3850,
+    "dname": "Lotus Orb"
+  },
+  "227": {
+    "cost": 500,
+    "dname": "Solar Crest Recipe"
+  },
+  "228": {
+    "cost": 200,
+    "dname": "Octarine Core Recipe"
+  },
+  "229": {
+    "cost": 2575,
+    "dname": "Solar Crest"
+  },
+  "230": {
+    "cost": 1175,
+    "dname": "Guardian Greaves Recipe"
+  },
+  "231": {
+    "cost": 4450,
+    "dname": "Guardian Greaves"
+  },
+  "232": {
+    "cost": 2275,
+    "dname": "Aether Lens"
+  },
+  "233": {
+    "cost": 775,
+    "dname": "Aether Lens Recipe"
+  },
+  "234": {
+    "cost": 450,
+    "dname": "Dragon Lance Recipe"
+  },
+  "235": {
+    "cost": 4900,
+    "dname": "Octarine Core"
+  },
+  "236": {
+    "cost": 1900,
+    "dname": "Dragon Lance"
+  },
+  "237": {
+    "cost": 65,
+    "dname": "Faerie Fire"
+  },
+  "238": {
+    "cost": 125,
+    "dname": "Iron Talon Recipe"
+  },
+  "239": {
+    "cost": 0,
+    "dname": "Iron Talon"
+  },
+  "240": {
+    "cost": 300,
+    "dname": "Orb of Blight"
+  },
+  "241": {
+    "cost": 30,
+    "dname": "Tango (Shared)"
+  },
+  "242": {
+    "cost": 3725,
+    "dname": "Crimson Guard"
+  },
+  "243": {
+    "cost": 1050,
+    "dname": "Crimson Guard Recipe"
+  },
+  "244": {
+    "cost": 225,
+    "dname": "Wind Lace"
+  },
+  "245": {
+    "cost": 600,
+    "dname": "Bloodthorn Recipe"
+  },
+  "247": {
+    "cost": 4000,
+    "dname": "Moon Shard"
+  },
+  "248": {
+    "cost": 250,
+    "dname": "Silver Edge Recipe"
+  },
+  "249": {
+    "cost": 5700,
+    "dname": "Silver Edge"
+  },
+  "250": {
+    "cost": 6400,
+    "dname": "Bloodthorn"
+  },
+  "252": {
+    "cost": 2700,
+    "dname": "Echo Sabre"
+  },
+  "253": {
+    "cost": 800,
+    "dname": "Glimmer Cape Recipe"
+  },
+  "254": {
+    "cost": 2150,
+    "dname": "Glimmer Cape"
+  },
+  "255": {
+    "cost": 1200,
+    "dname": "Aeon Disk Recipe"
+  },
+  "256": {
+    "cost": 3000,
+    "dname": "Aeon Disk"
+  },
+  "257": {
+    "cost": 75,
+    "dname": "Tome of Knowledge"
+  },
+  "258": {
+    "cost": 650,
+    "dname": "Kaya Recipe"
+  },
+  "259": {
+    "cost": 2100,
+    "dname": "Kaya"
+  },
+  "260": {
+    "cost": 1000,
+    "dname": "Refresher Shard"
+  },
+  "261": {
+    "cost": 450,
+    "dname": "Crown"
+  },
+  "262": {
+    "cost": 350,
+    "dname": "Hurricane Pike Recipe"
+  },
+  "263": {
+    "cost": 4450,
+    "dname": "Hurricane Pike"
+  },
+  "265": {
+    "cost": 225,
+    "dname": "Infused Raindrops"
+  },
+  "266": {
+    "cost": 900,
+    "dname": "Spirit Vessel Recipe"
+  },
+  "267": {
+    "cost": 2725,
+    "dname": "Spirit Vessel"
+  },
+  "268": {
+    "cost": 1340,
+    "dname": "Holy Locket Recipe"
+  },
+  "269": {
+    "cost": 2250,
+    "dname": "Holy Locket"
+  },
+  "270": {
+    "cost": 1600,
+    "dname": "Aghanim's Blessing Recipe"
+  },
+  "271": {
+    "cost": 5800,
+    "dname": "Aghanim's Blessing"
+  },
+  "273": {
+    "cost": 4200,
+    "dname": "Kaya and Sange"
+  },
+  "275": {
+    "cost": 1,
+    "dname": "Trident Recipe"
+  },
+  "277": {
+    "cost": 4200,
+    "dname": "Yasha and Kaya"
+  },
+  "279": {
+    "cost": 1700,
+    "dname": "Ring of Tarrasque"
+  },
+  "286": {
+    "cost": 100,
+    "dname": "Flying Courier"
+  },
+  "287": {
+    "cost": 0,
+    "dname": "Keen Optic"
+  },
+  "288": {
+    "cost": 0,
+    "dname": "Grove Bow"
+  },
+  "289": {
+    "cost": 0,
+    "dname": "Quickening Charm"
+  },
+  "290": {
+    "cost": 0,
+    "dname": "Philosopher's Stone"
+  },
+  "291": {
+    "cost": 0,
+    "dname": "Force Boots"
+  },
+  "292": {
+    "cost": 0,
+    "dname": "Stygian Desolator"
+  },
+  "293": {
+    "cost": 0,
+    "dname": "Phoenix Ash"
+  },
+  "294": {
+    "cost": 0,
+    "dname": "Seer Stone"
+  },
+  "295": {
+    "cost": 0,
+    "dname": "greater_mango"
+  },
+  "297": {
+    "cost": 0,
+    "dname": "Vampire Fangs"
+  },
+  "298": {
+    "cost": 0,
+    "dname": "Craggy Coat"
+  },
+  "299": {
+    "cost": 0,
+    "dname": "Greater Faerie Fire"
+  },
+  "300": {
+    "cost": 0,
+    "dname": "Timeless Relic"
+  },
+  "301": {
+    "cost": 0,
+    "dname": "Mirror Shield"
+  },
+  "302": {
+    "cost": 0,
+    "dname": "Elixir"
+  },
+  "304": {
+    "cost": 0,
+    "dname": "Ironwood Tree"
+  },
+  "305": {
+    "cost": 0,
+    "dname": "Royal Jelly"
+  },
+  "306": {
+    "cost": 0,
+    "dname": "Pupil's Gift"
+  },
+  "307": {
+    "cost": 0,
+    "dname": "Tome of Aghanim"
+  },
+  "308": {
+    "cost": 0,
+    "dname": "Repair Kit"
+  },
+  "309": {
+    "cost": 0,
+    "dname": "Mind Breaker"
+  },
+  "310": {
+    "cost": 0,
+    "dname": "Third Eye"
+  },
+  "311": {
+    "cost": 0,
+    "dname": "Spell Prism"
+  },
+  "312": {
+    "cost": 0,
+    "dname": "horizon"
+  },
+  "313": {
+    "cost": 0,
+    "dname": "Fusion Rune"
+  },
+  "325": {
+    "cost": 0,
+    "dname": "Prince's Knife"
+  },
+  "326": {
+    "cost": 0,
+    "dname": "Spider Legs"
+  },
+  "327": {
+    "cost": 0,
+    "dname": "Helm of the Undying"
+  },
+  "328": {
+    "cost": 0,
+    "dname": "Mango Tree"
+  },
+  "330": {
+    "cost": 0,
+    "dname": "Witless Shako"
+  },
+  "331": {
+    "cost": 0,
+    "dname": "Vambrace"
+  },
+  "334": {
+    "cost": 0,
+    "dname": "Imp Claw"
+  },
+  "335": {
+    "cost": 0,
+    "dname": "Flicker"
+  },
+  "336": {
+    "cost": 0,
+    "dname": "Telescope"
+  },
+  "349": {
+    "cost": 0,
+    "dname": "Arcane Ring"
+  },
+  "354": {
+    "cost": 0,
+    "dname": "Ocean Heart"
+  },
+  "355": {
+    "cost": 0,
+    "dname": "Broom Handle"
+  },
+  "356": {
+    "cost": 0,
+    "dname": "Trusty Shovel"
+  },
+  "357": {
+    "cost": 0,
+    "dname": "Nether Shawl"
+  },
+  "358": {
+    "cost": 0,
+    "dname": "Dragon Scale"
+  },
+  "359": {
+    "cost": 0,
+    "dname": "Essence Ring"
+  },
+  "360": {
+    "cost": 0,
+    "dname": "Clumsy Net"
+  },
+  "361": {
+    "cost": 0,
+    "dname": "Enchanted Quiver"
+  },
+  "362": {
+    "cost": 0,
+    "dname": "Ninja Gear"
+  },
+  "363": {
+    "cost": 0,
+    "dname": "Illusionist's Cape"
+  },
+  "364": {
+    "cost": 0,
+    "dname": "Havoc Hammer"
+  },
+  "365": {
+    "cost": 0,
+    "dname": "Magic Lamp"
+  },
+  "366": {
+    "cost": 0,
+    "dname": "Apex"
+  },
+  "367": {
+    "cost": 0,
+    "dname": "Ballista"
+  },
+  "368": {
+    "cost": 0,
+    "dname": "Woodland Striders"
+  },
+  "369": {
+    "cost": 6301,
+    "dname": "Trident"
+  },
+  "370": {
+    "cost": 0,
+    "dname": "Book of the Dead"
+  },
+  "371": {
+    "cost": 0,
+    "dname": "Fallen Sky"
+  },
+  "372": {
+    "cost": 0,
+    "dname": "Pirate Hat"
+  },
+  "374": {
+    "cost": 0,
+    "dname": "Ex Machina"
+  },
+  "375": {
+    "cost": 0,
+    "dname": "Faded Broach"
+  },
+  "376": {
+    "cost": 0,
+    "dname": "Paladin Sword"
+  },
+  "377": {
+    "cost": 0,
+    "dname": "Minotaur Horn"
+  },
+  "378": {
+    "cost": 0,
+    "dname": "Orb of Destruction"
+  },
+  "379": {
+    "cost": 0,
+    "dname": "The Leveller"
+  },
+  "381": {
+    "cost": 0,
+    "dname": "Titan Sliver"
+  },
+  "473": {
+    "cost": 650,
+    "dname": "Voodoo Mask"
+  },
+  "485": {
+    "cost": 1000,
+    "dname": "Blitz Knuckles"
+  },
+  "533": {
+    "cost": 300,
+    "dname": "Witch Blade Recipe"
+  },
+  "534": {
+    "cost": 2775,
+    "dname": "Witch Blade"
+  },
+  "565": {
+    "cost": 0,
+    "dname": "Chipped Vest"
+  },
+  "569": {
+    "cost": 1050,
+    "dname": "Orb of Corrosion"
+  },
+  "571": {
+    "cost": 0,
+    "dname": "Trickster Cloak"
+  },
+  "573": {
+    "cost": 0,
+    "dname": "Elven Tunic"
+  },
+  "574": {
+    "cost": 0,
+    "dname": "Cloak of Flames"
+  },
+  "577": {
+    "cost": 0,
+    "dname": "Possessed Mask"
+  },
+  "585": {
+    "cost": 0,
+    "dname": "Stormcrafter"
+  },
+  "589": {
+    "cost": 0,
+    "dname": "Fairy's Trinket"
+  },
+  "593": {
+    "cost": 250,
+    "dname": "Fluffy Hat"
+  },
+  "596": {
+    "cost": 1125,
+    "dname": "Falcon Blade"
+  },
+  "598": {
+    "cost": 3100,
+    "dname": "Mage Slayer"
+  },
+  "599": {
+    "cost": 250,
+    "dname": "Falcon Blade Recipe"
+  },
+  "600": {
+    "cost": 6800,
+    "dname": "Overwhelming Blink"
+  },
+  "603": {
+    "cost": 6800,
+    "dname": "Swift Blink"
+  },
+  "604": {
+    "cost": 6800,
+    "dname": "Arcane Blink"
+  },
+  "606": {
+    "cost": 1750,
+    "dname": "Arcane Blink Recipe"
+  },
+  "607": {
+    "cost": 1750,
+    "dname": "Swift Blink Recipe"
+  },
+  "608": {
+    "cost": 1750,
+    "dname": "Overwhelming Blink Recipe"
+  },
+  "609": {
+    "cost": 1400,
+    "dname": "Aghanim's Shard"
+  },
+  "610": {
+    "cost": 6800,
+    "dname": "Wind Waker"
+  },
+  "612": {
+    "cost": 1400,
+    "dname": "Wind Waker Recipe"
+  },
+  "633": {
+    "cost": 300,
+    "dname": "Helm of the Overlord Recipe"
+  },
+  "635": {
+    "cost": 5650,
+    "dname": "Helm of the Overlord"
+  },
+  "638": {
+    "cost": 0,
+    "dname": "Penta-Edged Sword"
+  },
+  "675": {
+    "cost": 0,
+    "dname": "Psychic Headband"
+  },
+  "676": {
+    "cost": 0,
+    "dname": "Ceremonial Robe"
+  },
+  "677": {
+    "cost": 0,
+    "dname": "Book of Shadows"
+  },
+  "678": {
+    "cost": 0,
+    "dname": "Giant's Ring"
+  },
+  "680": {
+    "cost": 0,
+    "dname": "Bullwhip"
+  },
+  "686": {
+    "cost": 0,
+    "dname": "Quicksilver Amulet"
+  },
+  "691": {
+    "cost": 900,
+    "dname": "Eternal Shroud Recipe"
+  },
+  "692": {
+    "cost": 3900,
+    "dname": "Eternal Shroud"
+  },
+  "725": {
+    "cost": 1400,
+    "dname": "Aghanim's Shard - Consumable"
+  },
+  "727": {
+    "cost": 5800,
+    "dname": "Aghanim's Blessing - Roshan"
+  },
+  "825": {
+    "cost": 0,
+    "dname": "Ascetic's Cap"
+  },
+  "828": {
+    "cost": 0,
+    "dname": "Brigand's Blade"
+  },
+  "829": {
+    "cost": 0,
+    "dname": "Arcanist's Armor"
+  },
+  "834": {
+    "cost": 0,
+    "dname": "Blast Rig"
+  },
+  "835": {
+    "cost": 0,
+    "dname": "Fae Grenade"
+  },
+  "837": {
+    "cost": 0,
+    "dname": "Witchbane"
+  },
+  "838": {
+    "cost": 0,
+    "dname": "Pig Pole"
+  },
+  "840": {
+    "cost": 0,
+    "dname": "Tumbler's Toy"
+  },
+  "849": {
+    "cost": 0,
+    "dname": "mechanical_arm"
+  },
+  "907": {
+    "cost": 400,
+    "dname": "recipe_wraith_pact"
+  },
+  "908": {
+    "cost": 3800,
+    "dname": "Wraith Pact"
+  },
+  "910": {
+    "cost": 650,
+    "dname": "Revenant's Brooch Recipe"
+  },
+  "911": {
+    "cost": 3300,
+    "dname": "Revenant's Brooch"
+  },
+  "931": {
+    "cost": 4225,
+    "dname": "Boots of Bearing"
+  },
+  "939": {
+    "cost": 4700,
+    "dname": "Harpoon"
+  },
+  "945": {
+    "cost": 0,
+    "dname": "Seeds of Serenity"
+  },
+  "946": {
+    "cost": 0,
+    "dname": "Lance of Pursuit"
+  },
+  "947": {
+    "cost": 0,
+    "dname": "Occult Bracelet"
+  },
+  "949": {
+    "cost": 0,
+    "dname": "Ogre Seal Totem"
+  },
+  "950": {
+    "cost": 0,
+    "dname": "Defiant Shell"
+  },
+  "990": {
+    "cost": 0,
+    "dname": "Eye of the Vizier"
+  },
+  "1000": {
+    "cost": 0,
+    "dname": "bottomless_chalice"
+  },
+  "1021": {
+    "cost": 0,
+    "dname": "River Vial: Chrome"
+  },
+  "1022": {
+    "cost": 0,
+    "dname": "River Vial: Dry"
+  },
+  "1023": {
+    "cost": 0,
+    "dname": "River Vial: Slime"
+  },
+  "1024": {
+    "cost": 0,
+    "dname": "River Vial: Oil"
+  },
+  "1025": {
+    "cost": 0,
+    "dname": "River Vial: Electrified"
+  },
+  "1026": {
+    "cost": 0,
+    "dname": "River Vial: Potion"
+  },
+  "1027": {
+    "cost": 0,
+    "dname": "River Vial: Blood"
+  },
+  "1028": {
+    "cost": 0,
+    "dname": "Tombstone"
+  },
+  "1029": {
+    "cost": 0,
+    "dname": "super_blink"
+  },
+  "1030": {
+    "cost": 0,
+    "dname": "Pocket Tower"
+  },
+  "1032": {
+    "cost": 1000,
+    "dname": "Pocket Roshan"
+  },
+  "1076": {
+    "cost": 2550,
+    "dname": "Specialist's Array"
+  },
+  "1077": {
+    "cost": 0,
+    "dname": "Dagger of Ristul"
+  },
+  "1090": {
+    "cost": 0,
+    "dname": "Mercy & Grace"
+  },
+  "1096": {
+    "cost": 800,
+    "dname": "Disperser Recipe"
+  },
+  "1097": {
+    "cost": 6100,
+    "dname": "Disperser"
+  },
+  "1101": {
+    "cost": 1000,
+    "dname": "Harpoon Recipe"
+  },
+  "1106": {
+    "cost": 200,
+    "dname": "Phylactery Recipe"
+  },
+  "1107": {
+    "cost": 2600,
+    "dname": "Phylactery"
+  },
+  "1122": {
+    "cost": 1000,
+    "dname": "Diadem"
+  },
+  "1123": {
+    "cost": 50,
+    "dname": "Blood Grenade"
+  },
+  "1124": {
+    "cost": 0,
+    "dname": "Spark of Courage"
+  },
+  "1125": {
+    "cost": 1200,
+    "dname": "Cornucopia"
+  },
+  "1127": {
+    "cost": 675,
+    "dname": "Pavise Recipe"
+  },
+  "1128": {
+    "cost": 1350,
+    "dname": "Pavise"
+  },
+  "1154": {
+    "cost": 2,
+    "dname": "Block of Cheese"
+  },
+  "1156": {
+    "cost": 0,
+    "dname": "Ancient Guardian"
+  },
+  "1157": {
+    "cost": 0,
+    "dname": "Safety Bubble"
+  },
+  "1158": {
+    "cost": 0,
+    "dname": "Whisper of the Dread"
+  },
+  "1159": {
+    "cost": 0,
+    "dname": "Nemesis Curse"
+  },
+  "1160": {
+    "cost": 0,
+    "dname": "Aviana's Feather"
+  },
+  "1161": {
+    "cost": 0,
+    "dname": "Unwavering Condition"
+  },
+  "1167": {
+    "cost": 0,
+    "dname": "Light Collector"
+  },
+  "1168": {
+    "cost": 0,
+    "dname": "Rattlecage"
+  },
+  "1440": {
+    "cost": 0,
+    "dname": "Black Grimoire\\n(Warlock)"
+  },
+  "1441": {
+    "cost": 0,
+    "dname": "Gris-Gris"
+  },
+  "1466": {
+    "cost": 4650,
+    "dname": "Gleipnir"
+  },
+  "1565": {
+    "cost": 400,
+    "dname": "Gleipnir Recipe"
+  },
+  "1575": {
+    "cost": 300,
+    "dname": "Orb of Frost"
+  },
+  "1576": {
+    "cost": 0,
+    "dname": "Vast"
+  },
+  "1577": {
+    "cost": 0,
+    "dname": "Quickened"
+  },
+  "1581": {
+    "cost": 0,
+    "dname": "Audacious"
+  },
+  "1583": {
+    "cost": 0,
+    "dname": "Mystical"
+  },
+  "1584": {
+    "cost": 0,
+    "dname": "Alert"
+  },
+  "1585": {
+    "cost": 0,
+    "dname": "Brawny"
+  },
+  "1586": {
+    "cost": 0,
+    "dname": "Tough"
+  },
+  "1587": {
+    "cost": 0,
+    "dname": "Feverish"
+  },
+  "1588": {
+    "cost": 0,
+    "dname": "Fleetfooted"
+  },
+  "1589": {
+    "cost": 0,
+    "dname": "Crude"
+  },
+  "1590": {
+    "cost": 0,
+    "dname": "Boundless"
+  },
+  "1591": {
+    "cost": 0,
+    "dname": "Wise"
+  },
+  "1592": {
+    "cost": 0,
+    "dname": "Timeless"
+  },
+  "1593": {
+    "cost": 0,
+    "dname": "Greedy"
+  },
+  "1594": {
+    "cost": 0,
+    "dname": "Vampiric"
+  },
+  "1595": {
+    "cost": 0,
+    "dname": "Keen-eyed"
+  },
+  "1596": {
+    "cost": 0,
+    "dname": "Evolved"
+  },
+  "1597": {
+    "cost": 0,
+    "dname": "Titanic"
+  },
+  "1598": {
+    "cost": 0,
+    "dname": "Unrelenting Eye"
+  },
+  "1599": {
+    "cost": 0,
+    "dname": "Mana Draught"
+  },
+  "1600": {
+    "cost": 0,
+    "dname": "Ripper's Lash"
+  },
+  "1601": {
+    "cost": 0,
+    "dname": "Crippling Crossbow"
+  },
+  "1602": {
+    "cost": 0,
+    "dname": "Gale Guard"
+  },
+  "1603": {
+    "cost": 0,
+    "dname": "Gunpowder Gauntlet"
+  },
+  "1604": {
+    "cost": 0,
+    "dname": "Searing Signet"
+  },
+  "1605": {
+    "cost": 0,
+    "dname": "Serrated Shiv"
+  },
+  "1606": {
+    "cost": 0,
+    "dname": "Pollywog Charm"
+  },
+  "1607": {
+    "cost": 0,
+    "dname": "Magnifying Monocle"
+  },
+  "1608": {
+    "cost": 0,
+    "dname": "Pyrrhic Cloak"
+  },
+  "1609": {
+    "cost": 0,
+    "dname": "Madstone Bundle"
+  },
+  "1610": {
+    "cost": 0,
+    "dname": "miniboss_minion_summoner"
+  },
+  "1637": {
+    "cost": 0,
+    "dname": "Kobold Cup"
+  },
+  "1638": {
+    "cost": 0,
+    "dname": "Dormant Curio"
+  },
+  "1639": {
+    "cost": 0,
+    "dname": "Sister's Shroud"
+  },
+  "1640": {
+    "cost": 0,
+    "dname": "Jidi Pollen Bag"
+  },
+  "1641": {
+    "cost": 0,
+    "dname": "Outworld Staff"
+  },
+  "1642": {
+    "cost": 0,
+    "dname": "Dezun Bloodrite"
+  },
+  "1643": {
+    "cost": 0,
+    "dname": "Giant's Maul"
+  },
+  "1644": {
+    "cost": 0,
+    "dname": "Divine Regalia"
+  },
+  "1645": {
+    "cost": 0,
+    "dname": "Disgraced Regalia"
+  },
+  "1647": {
+    "cost": 0,
+    "dname": "Fierce"
+  },
+  "1648": {
+    "cost": 0,
+    "dname": "Dominant"
+  },
+  "1649": {
+    "cost": 0,
+    "dname": "Restorative"
+  },
+  "1650": {
+    "cost": 0,
+    "dname": "Thick"
+  },
+  "1651": {
+    "cost": 0,
+    "dname": "Unleashed"
+  },
+  "1652": {
+    "cost": 0,
+    "dname": "Bag of Gold"
+  },
+  "1715": {
+    "cost": 550,
+    "dname": "recipe_specialists_array"
+  },
+  "1716": {
+    "cost": 0,
+    "dname": "Weighted Dice"
+  },
+  "1717": {
+    "cost": 0,
+    "dname": "Ash Legion Shield"
+  },
+  "1718": {
+    "cost": 0,
+    "dname": "Riftshadow Prism"
+  },
+  "1719": {
+    "cost": 0,
+    "dname": "Metamorphic Mandible"
+  },
+  "1720": {
+    "cost": 0,
+    "dname": "Idol of Scree'auk"
+  },
+  "1721": {
+    "cost": 0,
+    "dname": "Flayer's Bota"
+  },
+  "1801": {
+    "cost": 5600,
+    "dname": "caster_rapier"
+  },
+  "1802": {
+    "cost": 1700,
+    "dname": "Tiara of Selemene"
+  },
+  "1803": {
+    "cost": 0,
+    "dname": "Doubloon"
+  },
+  "1804": {
+    "cost": 0,
+    "dname": "Roshan's Banner"
+  },
+  "1805": {
+    "cost": 400,
+    "dname": "Parasma Recipe"
+  },
+  "1806": {
+    "cost": 5975,
+    "dname": "Parasma"
+  },
+  "1808": {
+    "cost": 5600,
+    "dname": "Khanda"
+  },
+  "1847": {
+    "cost": 950,
+    "dname": "Splintmail"
+  },
+  "1848": {
+    "cost": 450,
+    "dname": "Shawl"
+  },
+  "1849": {
+    "cost": 250,
+    "dname": "Wizard Hat"
+  },
+  "1850": {
+    "cost": 0,
+    "dname": "Eldwurm's Edda"
+  },
+  "1851": {
+    "cost": 200,
+    "dname": "Essence Distiller Recipe"
+  },
+  "1852": {
+    "cost": 1775,
+    "dname": "Essence Distiller"
+  },
+  "1853": {
+    "cost": 700,
+    "dname": "Consecrated Wraps Recipe"
+  },
+  "1854": {
+    "cost": 2600,
+    "dname": "Consecrated Wraps"
+  },
+  "1855": {
+    "cost": 300,
+    "dname": "Crella's Crozier Recipe"
+  },
+  "1856": {
+    "cost": 4800,
+    "dname": "Crella's Crozier"
+  },
+  "1857": {
+    "cost": 1100,
+    "dname": "recipe_hydras_breath"
+  },
+  "1858": {
+    "cost": 5900,
+    "dname": "Hydra's Breath"
+  },
+  "1859": {
+    "cost": 0,
+    "dname": "Spellslinger"
+  },
+  "1860": {
+    "cost": 0,
+    "dname": "Prophet's Pendulum"
+  },
+  "1861": {
+    "cost": 0,
+    "dname": "Stonefeather Satchel"
+  },
+  "1862": {
+    "cost": 0,
+    "dname": "Enchanter's Bauble"
+  },
+  "1863": {
+    "cost": 0,
+    "dname": "Harmonizer"
+  },
+  "1864": {
+    "cost": 0,
+    "dname": "Conjurer's Catalyst"
+  },
+  "1865": {
+    "cost": 0,
+    "dname": "Vital"
+  },
+  "1866": {
+    "cost": 0,
+    "dname": "Hulking"
+  },
+  "1867": {
+    "cost": 0,
+    "dname": "Manic"
+  },
+  "1868": {
+    "cost": 0,
+    "dname": "Forager's Kit"
+  },
+  "1869": {
+    "cost": 0,
+    "dname": "Vital Toadstool"
+  },
+  "1870": {
+    "cost": 0,
+    "dname": "Ironwood Nut"
+  },
+  "1871": {
+    "cost": 0,
+    "dname": "Tomo'kan Ringcap"
+  },
+  "1872": {
+    "cost": 800,
+    "dname": "Chasm Stone"
+  },
+  "1873": {
+    "cost": 0,
+    "dname": "Partisan's Brand"
+  },
+  "1874": {
+    "cost": 0,
+    "dname": "Nimble"
+  },
+  "1875": {
+    "cost": 0,
+    "dname": "Leviathan's Fish"
+  },
+  "2091": {
+    "cost": 0,
+    "dname": "Tier 1 Token"
+  },
+  "2092": {
+    "cost": 0,
+    "dname": "Tier 2 Token"
+  },
+  "2093": {
+    "cost": 0,
+    "dname": "Tier 3 Token"
+  },
+  "2094": {
+    "cost": 0,
+    "dname": "Tier 4 Token"
+  },
+  "2095": {
+    "cost": 0,
+    "dname": "Tier 5 Token"
+  },
+  "2096": {
+    "cost": 0,
+    "dname": "Vindicator's Axe"
+  },
+  "2097": {
+    "cost": 0,
+    "dname": "Duelist Gloves"
+  },
+  "2190": {
+    "cost": 0,
+    "dname": "Dandelion Amulet"
+  },
+  "2192": {
+    "cost": 0,
+    "dname": "Martyr's Plate"
+  },
+  "2193": {
+    "cost": 0,
+    "dname": "Gossamer Cape"
+  },
+  "4204": {
+    "cost": 0,
+    "dname": "Healing Lotus"
+  },
+  "4205": {
+    "cost": 0,
+    "dname": "Great Healing Lotus"
+  },
+  "4206": {
+    "cost": 0,
+    "dname": "Greater Healing Lotus"
+  },
+  "4300": {
+    "cost": 0,
+    "dname": "Beloved Memory"
+  },
+  "4301": {
+    "cost": 0,
+    "dname": "Scrying Shovel"
+  },
+  "4302": {
+    "cost": 0,
+    "dname": "Forebearer's Fortune"
+  }
+}

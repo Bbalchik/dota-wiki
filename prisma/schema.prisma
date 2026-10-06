@@ -1,0 +1,106 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model SteamProfile {
+  id              Int           @id @default(autoincrement())
+  steamId         String        @unique // SteamID32 or Friend ID (e.g. "86745912")
+  personaName     String
+  avatarUrl       String?
+  rankTier        Int           @default(80) // 80 = Immortal, 75 = Divine 5, etc.
+  leaderboardRank Int?          // e.g. 1420
+  currentMmr      Int           @default(6500)
+  wins            Int           @default(0)
+  losses          Int           @default(0)
+
+  matches         PlayerMatch[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Hero {
+  id            Int           @id @default(autoincrement())
+  heroId        Int           @unique // Official Dota 2 hero ID
+  name          String        @unique
+  localizedName String
+  primaryAttr   String        // "str" | "agi" | "int" | "all"
+  iconUrl       String?
+
+  matches       PlayerMatch[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model PlayerMatch {
+  id           Int          @id @default(autoincrement())
+  matchId      String       @unique // Dota 2 Match ID
+  profileId    Int
+  profile      SteamProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  heroId       Int
+  hero         Hero         @relation(fields: [heroId], references: [id])
+
+  won          Boolean
+  isRadiant    Boolean      @default(true)
+  mmrChange    Int          // e.g. +25 or -25
+  mmrAfter     Int          // MMR after this match
+
+  kills        Int
+  deaths       Int
+  assists      Int
+  duration     Int          // match duration in seconds
+  gameMode     String       @default("Ranked All Pick")
+  role         String       @default("Safe Lane") // "Safe Lane", "Mid", "Offlane", "Soft Support", "Hard Support"
+
+  goldPerMin   Int          @default(0)
+  xpPerMin     Int          @default(0)
+  netWorth     Int          @default(0)
+  impScore     Int          @default(0) // STRATZ style IMP score (-100 to +100)
+  isMvp        Boolean      @default(false)
+
+  // Comma-separated item names e.g. "phase_boots,battle_fury,manta,butterfly,satanic"
+  items        String?
+  neutralItem  String?
+
+  startTime    DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+}
+
+model DotaMatch {
+  id                 Int      @id @default(autoincrement())
+  matchId            String   @unique // Official Dota 2 Match ID (e.g. "9022834804", "9017797563")
+  radiantWin         Boolean
+  duration           Int      // duration in seconds
+  startTime          DateTime // match start timestamp
+  gameMode           Int      @default(22) // 22 = Ranked All Pick, 23 = Turbo, etc.
+  gameModeName       String   @default("Ranked All Pick")
+  lobbyType          Int      @default(7)  // 7 = Ranked, 0 = Normal, 1 = Practice
+  radiantScore       Int      @default(0)
+  direScore          Int      @default(0)
+  firstBloodTime     Int?
+  towerStatusRad     Int?
+  towerStatusDire    Int?
+  barracksStatusRad  Int?
+  barracksStatusDire Int?
+  cluster            Int?
+  regionName         String?
+  skillBracket       String?  // "Very High Skill", "High Skill", "Normal Skill"
+  radiantGoldAdv     String?  // JSON array of minute-by-minute gold diff
+  radiantXpAdv       String?  // JSON array of minute-by-minute xp diff
+  playersJson        String   // Full JSON array of 10 players with items, backpack, abilities, stats
+  rawDetailsJson     String?  // Complete raw match JSON for detailed view and caching
+  isParsed           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([startTime])
+  @@index([gameMode])
+  @@index([radiantWin])
+}

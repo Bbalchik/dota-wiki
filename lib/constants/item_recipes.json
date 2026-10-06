@@ -1,0 +1,541 @@
+{
+  "overwhelming_blink": [
+    "blink",
+    "reaver"
+  ],
+  "swift_blink": [
+    "blink",
+    "eagle"
+  ],
+  "arcane_blink": [
+    "blink",
+    "mystic_staff"
+  ],
+  "moon_shard": [
+    "hyperstone",
+    "hyperstone"
+  ],
+  "magic_wand": [
+    "magic_stick",
+    "branches",
+    "branches"
+  ],
+  "great_famango": [
+    "famango",
+    "famango",
+    "famango"
+  ],
+  "greater_famango": [
+    "great_famango",
+    "great_famango"
+  ],
+  "ward_dispenser": [
+    "ward_sentry",
+    "ward_observer"
+  ],
+  "travel_boots": [
+    "boots"
+  ],
+  "travel_boots_2": [
+    "travel_boots",
+    "recipe_travel_boots"
+  ],
+  "phase_boots": [
+    "boots",
+    "chainmail",
+    "blades_of_attack"
+  ],
+  "power_treads": [
+    "boots",
+    "gloves",
+    "belt_of_strength"
+  ],
+  "phylactery": [
+    "pers",
+    "diadem"
+  ],
+  "angels_demise": [
+    "phylactery",
+    "soul_booster"
+  ],
+  "hand_of_midas": [
+    "gloves"
+  ],
+  "oblivion_staff": [
+    "blitz_knuckles",
+    "robe",
+    "sobi_mask"
+  ],
+  "witch_blade": [
+    "oblivion_staff",
+    "chainmail",
+    "orb_of_venom"
+  ],
+  "pers": [
+    "ring_of_health",
+    "void_stone"
+  ],
+  "bracer": [
+    "circlet",
+    "gauntlets"
+  ],
+  "wraith_band": [
+    "circlet",
+    "slippers"
+  ],
+  "null_talisman": [
+    "circlet",
+    "mantle"
+  ],
+  "mekansm": [
+    "headdress",
+    "chainmail"
+  ],
+  "vladmir": [
+    "buckler",
+    "ring_of_basilius",
+    "lifesteal",
+    "blades_of_attack"
+  ],
+  "wraith_pact": [
+    "vladmir",
+    "point_booster"
+  ],
+  "buckler": [
+    "ring_of_protection"
+  ],
+  "ring_of_basilius": [
+    "sobi_mask"
+  ],
+  "holy_locket": [
+    "magic_wand",
+    "crown"
+  ],
+  "pipe": [
+    "ring_of_tarrasque",
+    "cloak",
+    "shawl",
+    ""
+  ],
+  "urn_of_shadows": [
+    "sobi_mask",
+    "ring_of_protection",
+    "circlet",
+    ""
+  ],
+  "headdress": [
+    "ring_of_regen"
+  ],
+  "sheepstick": [
+    "mystic_staff",
+    "tiara_of_selemene"
+  ],
+  "orchid": [
+    "oblivion_staff",
+    "claymore"
+  ],
+  "bloodthorn": [
+    "orchid",
+    "oblivion_staff",
+    "javelin"
+  ],
+  "echo_sabre": [
+    "ogre_axe",
+    "broadsword",
+    "void_stone"
+  ],
+  "cyclone": [
+    "staff_of_wizardry",
+    "void_stone",
+    "wind_lace"
+  ],
+  "wind_waker": [
+    "cyclone",
+    "mystic_staff"
+  ],
+  "aether_lens": [
+    "energy_booster",
+    "void_stone"
+  ],
+  "force_staff": [
+    "staff_of_wizardry",
+    "fluffy_hat"
+  ],
+  "hurricane_pike": [
+    "force_staff",
+    "dragon_lance"
+  ],
+  "dagon": [
+    "point_booster",
+    "crown",
+    "wizard_hat"
+  ],
+  "necronomicon": [
+    "sobi_mask",
+    "sobi_mask",
+    "belt_of_strength"
+  ],
+  "necronomicon_2": [
+    "necronomicon",
+    "recipe_necronomicon"
+  ],
+  "necronomicon_3": [
+    "necronomicon_2",
+    "recipe_necronomicon"
+  ],
+  "ultimate_scepter": [
+    "point_booster",
+    "staff_of_wizardry",
+    "ogre_axe",
+    "blade_of_alacrity"
+  ],
+  "ultimate_scepter_2": [
+    "ultimate_scepter"
+  ],
+  "refresher": [
+    "ring_of_tarrasque",
+    "tiara_of_selemene"
+  ],
+  "assault": [
+    "buckler",
+    "hyperstone",
+    "platemail"
+  ],
+  "heart": [
+    "reaver",
+    "ring_of_tarrasque"
+  ],
+  "black_king_bar": [
+    "mithril_hammer",
+    "ogre_axe"
+  ],
+  "shivas_guard": [
+    "platemail",
+    "splintmail",
+    "chasm_stone"
+  ],
+  "bloodstone": [
+    "veil_of_discord",
+    "soul_booster"
+  ],
+  "sphere": [
+    "pers",
+    "ultimate_orb",
+    ""
+  ],
+  "lotus_orb": [
+    "pers",
+    "platemail",
+    "energy_booster"
+  ],
+  "meteor_hammer": [
+    "kaya",
+    "crown"
+  ],
+  "nullifier": [
+    "relic",
+    "splintmail"
+  ],
+  "aeon_disk": [
+    "vitality_booster",
+    "energy_booster"
+  ],
+  "kaya": [
+    "staff_of_wizardry",
+    "robe"
+  ],
+  "trident": [
+    "kaya",
+    "sange",
+    "yasha",
+    ""
+  ],
+  "spirit_vessel": [
+    "urn_of_shadows",
+    "diadem"
+  ],
+  "essence_distiller": [
+    "urn_of_shadows",
+    "chainmail",
+    "wizard_hat"
+  ],
+  "vanguard": [
+    "vitality_booster",
+    "ring_of_health"
+  ],
+  "crimson_guard": [
+    "vanguard",
+    "helm_of_iron_will"
+  ],
+  "blade_mail": [
+    "broadsword",
+    "splintmail"
+  ],
+  "soul_booster": [
+    "point_booster",
+    "vitality_booster",
+    "energy_booster"
+  ],
+  "eternal_shroud": [
+    "cloak",
+    "ogre_axe",
+    "vitality_booster"
+  ],
+  "consecrated_wraps": [
+    "vitality_booster",
+    "shawl",
+    "crown"
+  ],
+  "crellas_crozier": [
+    "ghost",
+    "soul_booster"
+  ],
+  "rapier": [
+    "relic",
+    "demon_edge"
+  ],
+  "monkey_king_bar": [
+    "demon_edge",
+    "blitz_knuckles",
+    "javelin"
+  ],
+  "radiance": [
+    "relic",
+    "talisman_of_evasion"
+  ],
+  "butterfly": [
+    "eagle",
+    "claymore",
+    "talisman_of_evasion"
+  ],
+  "greater_crit": [
+    "lesser_crit",
+    "demon_edge"
+  ],
+  "basher": [
+    "mithril_hammer",
+    "belt_of_strength"
+  ],
+  "bfury": [
+    "pers",
+    "broadsword",
+    "broadsword",
+    "quelling_blade"
+  ],
+  "manta": [
+    "yasha",
+    "diadem"
+  ],
+  "lesser_crit": [
+    "claymore",
+    "blades_of_attack"
+  ],
+  "dragon_lance": [
+    "blade_of_alacrity",
+    "belt_of_strength"
+  ],
+  "armlet": [
+    "helm_of_iron_will",
+    "gloves",
+    "blades_of_attack"
+  ],
+  "invis_sword": [
+    "claymore",
+    "blitz_knuckles",
+    "shadow_amulet"
+  ],
+  "silver_edge": [
+    "invis_sword",
+    "demon_edge"
+  ],
+  "sange_and_yasha": [
+    "sange",
+    "yasha"
+  ],
+  "kaya_and_sange": [
+    "kaya",
+    "sange"
+  ],
+  "yasha_and_kaya": [
+    "yasha",
+    "kaya"
+  ],
+  "satanic": [
+    "reaver",
+    "claymore",
+    "lifesteal"
+  ],
+  "mjollnir": [
+    "maelstrom",
+    "hyperstone"
+  ],
+  "skadi": [
+    "ultimate_orb",
+    "ultimate_orb",
+    "orb_of_frost"
+  ],
+  "sange": [
+    "ogre_axe",
+    "belt_of_strength"
+  ],
+  "helm_of_the_dominator": [
+    "helm_of_iron_will",
+    "crown"
+  ],
+  "helm_of_the_overlord": [
+    "helm_of_the_dominator",
+    "ultimate_orb"
+  ],
+  "maelstrom": [
+    "mithril_hammer",
+    "javelin",
+    "gloves"
+  ],
+  "gungir": [
+    "rod_of_atos",
+    "point_booster",
+    "chasm_stone"
+  ],
+  "desolator": [
+    "mithril_hammer",
+    "mithril_hammer",
+    "blight_stone"
+  ],
+  "yasha": [
+    "blade_of_alacrity",
+    "boots_of_elves"
+  ],
+  "mask_of_madness": [
+    "broadsword",
+    "lifesteal"
+  ],
+  "diffusal_blade": [
+    "blade_of_alacrity",
+    "robe"
+  ],
+  "disperser": [
+    "diffusal_blade",
+    "eagle"
+  ],
+  "ethereal_blade": [
+    "ultimate_orb",
+    "ghost"
+  ],
+  "soul_ring": [
+    "ring_of_protection",
+    "gauntlets",
+    "gauntlets"
+  ],
+  "arcane_boots": [
+    "boots",
+    "ring_of_basilius",
+    "wizard_hat"
+  ],
+  "octarine_core": [
+    "soul_booster",
+    "tiara_of_selemene",
+    ""
+  ],
+  "orb_of_corrosion": [
+    "boots_of_elves",
+    "orb_of_frost",
+    "blight_stone"
+  ],
+  "falcon_blade": [
+    "blades_of_attack",
+    "fluffy_hat",
+    "sobi_mask"
+  ],
+  "mage_slayer": [
+    "pers",
+    "cloak",
+    "blades_of_attack",
+    "orb_of_venom"
+  ],
+  "ancient_janggo": [
+    "headdress",
+    "belt_of_strength",
+    "wind_lace"
+  ],
+  "boots_of_bearing": [
+    "tranquil_boots",
+    "ancient_janggo",
+    "ring_of_tarrasque"
+  ],
+  "medallion_of_courage": [
+    "chainmail",
+    "sobi_mask",
+    "blight_stone"
+  ],
+  "solar_crest": [
+    "pavise",
+    "chainmail",
+    "wind_lace"
+  ],
+  "pavise": [
+    "wizard_hat",
+    "fluffy_hat",
+    "ring_of_protection"
+  ],
+  "veil_of_discord": [
+    "voodoo_mask",
+    "robe",
+    "fluffy_hat"
+  ],
+  "revenants_brooch": [
+    "lesser_crit",
+    "voodoo_mask"
+  ],
+  "devastator": [
+    "witch_blade",
+    "mystic_staff"
+  ],
+  "guardian_greaves": [
+    "arcane_boots",
+    "mekansm"
+  ],
+  "rod_of_atos": [
+    "staff_of_wizardry",
+    "vitality_booster"
+  ],
+  "iron_talon": [
+    "quelling_blade",
+    "ring_of_protection"
+  ],
+  "abyssal_blade": [
+    "basher",
+    "sange"
+  ],
+  "heavens_halberd": [
+    "talisman_of_evasion",
+    "splintmail",
+    "ring_of_health"
+  ],
+  "tranquil_boots": [
+    "boots",
+    "wind_lace",
+    "ring_of_regen"
+  ],
+  "glimmer_cape": [
+    "shadow_amulet",
+    "shawl"
+  ],
+  "harpoon": [
+    "echo_sabre",
+    "diadem"
+  ],
+  "specialists_array": [
+    "blade_of_alacrity",
+    "broadsword"
+  ],
+  "hydras_breath": [
+    "specialists_array",
+    "dragon_lance",
+    "orb_of_venom",
+    ""
+  ],
+  "diffusal_blade_2": [
+    "diffusal_blade",
+    "recipe_diffusal_blade"
+  ]
+}
