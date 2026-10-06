@@ -3,6 +3,8 @@ import {
   fetchMatchDetails,
   fetchAllPlayerMatches,
   fetchProMatches,
+  isRateLimitExceeded,
+  setRateLimitCooldown,
   type FullMatchDetails,
 } from "@/lib/opendota";
 import { saveDotaMatchToDb, getDatabaseStats } from "@/lib/dota-match-db";
@@ -72,6 +74,9 @@ export async function runSyncCycle(): Promise<{ added: number; message: string }
   const state = getState();
   if (state.isSyncing) {
     return { added: 0, message: "Sync cycle already in progress" };
+  }
+  if (isRateLimitExceeded()) {
+    return { added: 0, message: "OpenDota API rate limit reached, waiting for cooldown" };
   }
 
   state.isSyncing = true;
@@ -160,7 +165,11 @@ export async function runSyncCycle(): Promise<{ added: number; message: string }
         where: { matchId: { in: allCandidateList } },
         select: { matchId: true, isParsed: true },
       });
-      const parsedSet = new Set(existingInDb.filter((m) => m.isParsed).map((m) => m.matchId));
+      const parsedSet = new Set(
+        existingInDb
+          .filter((m: { matchId: string; isParsed: boolean }) => m.isParsed)
+          .map((m: { matchId: string; isParsed: boolean }) => m.matchId)
+      );
       const freshMatchIds = allCandidateList.filter((id) => !parsedSet.has(id));
 
       // 4. Ingest at most 2 fresh matches per cycle to maintain smooth performance and zero lag
@@ -223,18 +232,18 @@ export function startDotaAutoUpdater(): void {
 
   console.log("🚀 [Dota Auto-Updater] Запущен автономный сервис обновления матчей Dota 2...");
 
-  // Run first cycle gently after 15 seconds to allow full server startup
+  // Run first cycle gently after 60 seconds to allow full server startup
   setTimeout(() => {
     runSyncCycle().catch(() => {});
-  }, 15_000);
+  }, 60_000);
 
-  // Run automatically every 3 minutes (180s) to eliminate lag and prevent 429 rate limits
+  // Run periodically every 10 minutes (600s) to eliminate lag and prevent 429 rate limits
   if (globalThis.__dotaAutoUpdaterTimer) {
     clearInterval(globalThis.__dotaAutoUpdaterTimer);
   }
   globalThis.__dotaAutoUpdaterTimer = setInterval(() => {
     runSyncCycle().catch(() => {});
-  }, 180_000);
+  }, 600_000);
 }
 
 /**

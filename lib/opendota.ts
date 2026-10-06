@@ -1,11 +1,46 @@
 import { getItemIconUrl, getItemName, getItemCost } from './item-utils';
 import { assignTeamPositions, isRadiantSlot, type DotaPosition } from './positions';
 
+import heroStatsFallback from './constants/hero_stats.json';
+
 const BASE = 'https://api.opendota.com/api';
 
 export const CURRENT_DOTA_PATCH = '7.41d';
 
 const memCache = new Map<string, { time: number; data: unknown }>();
+
+let rateLimitCooldownUntil = 0;
+
+export function isRateLimitExceeded(): boolean {
+  return Date.now() < rateLimitCooldownUntil;
+}
+
+export function setRateLimitCooldown(ms = 1800_000): void {
+  rateLimitCooldownUntil = Date.now() + ms;
+}
+
+export async function safeOpenDotaFetch(endpoint: string, options?: RequestInit, timeoutMs = 2500): Promise<Response | null> {
+  if (isRateLimitExceeded()) {
+    return null;
+  }
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const url = endpoint.startsWith('http') ? endpoint : `${BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (res.status === 429) {
+      setRateLimitCooldown();
+      return null;
+    }
+    return res;
+  } catch {
+    return null;
+  }
+}
 
 function readCache<T>(key: string, maxAgeMs: number): T | null {
   const item = memCache.get(key);
@@ -329,20 +364,91 @@ export async function fetchPlayerProfile(
   const cached = readCache<OpenDotaPlayer>(cacheKey, 300_000);
   if (cached) return cached;
 
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch(`/players/${accountId}`, {
+        next: { revalidate: 300 },
+      });
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object' && data.profile) {
+          writeCache(cacheKey, data);
+          return data;
+        }
+      }
+    } catch {}
+  }
+
+  // Fallback to local DB (steamProfile or dotaMatch)
   try {
-    const res = await fetch(`${BASE}/players/${accountId}`, {
-      next: { revalidate: 300 },
+    const { prisma } = await import('@/lib/prisma');
+    const dbProfile = await prisma.steamProfile.findFirst({
+      where: { OR: [{ steamId: String(accountId) }, { id: accountId }] },
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && typeof data === 'object') {
-        writeCache(cacheKey, data);
-        return data;
+    if (dbProfile) {
+      const constructed: OpenDotaPlayer = {
+        tracked_until: null,
+        solo_competitive_rank: null,
+        competitive_rank: null,
+        rank_tier: dbProfile.rankTier,
+        leaderboard_rank: dbProfile.leaderboardRank,
+        computed_mmr: dbProfile.currentMmr || 6500,
+        profile: {
+          account_id: accountId,
+          personaname: dbProfile.personaName,
+          name: dbProfile.personaName,
+          plus: true,
+          cheese: 0,
+          steamid: dbProfile.steamId,
+          avatar: dbProfile.avatarUrl || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+          avatarmedium: dbProfile.avatarUrl || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+          avatarfull: dbProfile.avatarUrl || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+          profileurl: `https://steamcommunity.com/profiles/${dbProfile.steamId}`,
+          last_login: null,
+          loccountrycode: null,
+        },
+      };
+      writeCache(cacheKey, constructed);
+      return constructed;
+    }
+
+    const recentMatch = await prisma.dotaMatch.findFirst({
+      where: { playersJson: { contains: `"account_id":${accountId}` } },
+      orderBy: { startTime: 'desc' },
+      select: { playersJson: true },
+    });
+    if (recentMatch) {
+      const pl = JSON.parse(recentMatch.playersJson);
+      const p = pl.find((x: any) => x.account_id === accountId);
+      if (p) {
+        const constructed: OpenDotaPlayer = {
+          tracked_until: null,
+          solo_competitive_rank: null,
+          competitive_rank: null,
+          rank_tier: p.rank_tier || 80,
+          leaderboard_rank: null,
+          computed_mmr: p.computed_mmr || 6000,
+          profile: {
+            account_id: accountId,
+            personaname: p.personaname || `Игрок #${accountId}`,
+            name: p.personaname || `Игрок #${accountId}`,
+            plus: false,
+            cheese: 0,
+            steamid: String(accountId),
+            avatar: p.avatarfull || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+            avatarmedium: p.avatarfull || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+            avatarfull: p.avatarfull || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+            profileurl: `https://steamcommunity.com/profiles/${accountId}`,
+            last_login: null,
+            loccountrycode: null,
+          },
+        };
+        writeCache(cacheKey, constructed);
+        return constructed;
       }
     }
-  } catch {
-    // fallback to cache
-  }
+  } catch {}
+
   return readStaleCache<OpenDotaPlayer>(cacheKey);
 }
 
@@ -353,31 +459,41 @@ export async function fetchPlayerWinLoss(
   const cached = readCache<OpenDotaWinLoss>(cacheKey, 300_000);
   if (cached) return cached;
 
-  try {
-    const res = await fetch(`${BASE}/players/${accountId}/wl?significant=0`, {
-      next: { revalidate: 300 },
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (typeof data?.win === 'number' && typeof data?.lose === 'number') {
-        writeCache(cacheKey, data);
-        return data;
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch(`/players/${accountId}/wl?significant=0`, {
+        next: { revalidate: 300 },
+      });
+      if (res && res.ok) {
+        const data = await res.json();
+        if (typeof data?.win === 'number' && typeof data?.lose === 'number') {
+          writeCache(cacheKey, data);
+          return data;
+        }
       }
-    }
-    const fallbackRes = await fetch(`${BASE}/players/${accountId}/wl?significant=0`, {
-      next: { revalidate: 300 },
-    });
-    if (fallbackRes.ok) {
-      const data = await fallbackRes.json();
-      if (typeof data?.win === 'number') {
-        writeCache(cacheKey, data);
-        return data;
-      }
-    }
-  } catch {
-    // fallback to cache
+    } catch {}
   }
-  return readStaleCache<OpenDotaWinLoss>(cacheKey);
+
+  // Calculate from local matches
+  try {
+    const { getPlayerMatchesFromDb } = await import('@/lib/dota-match-db');
+    const matches = await getPlayerMatchesFromDb(accountId, 100);
+    if (matches && matches.length > 0) {
+      let win = 0;
+      let lose = 0;
+      for (const m of matches) {
+        const isRad = m.player_slot < 128;
+        const won = isRad ? m.radiant_win : !m.radiant_win;
+        if (won) win++;
+        else lose++;
+      }
+      const result = { win, lose };
+      writeCache(cacheKey, result);
+      return result;
+    }
+  } catch {}
+
+  return readStaleCache<OpenDotaWinLoss>(cacheKey) ?? { win: 0, lose: 0 };
 }
 
 const MATCH_PROJECT_FIELDS = [
@@ -718,16 +834,12 @@ export async function fetchMatchDetails(
   if (cached) return cached;
 
   // 1. Check local SQLite database first
-  let dbFallback: FullMatchDetails | null = null;
   try {
     const { getDotaMatchFromDb } = await import("@/lib/dota-match-db");
     const dbMatch = await getDotaMatchFromDb(matchId);
     if (dbMatch && dbMatch.players && dbMatch.players.length >= 10) {
-      if (dbMatch.is_parsed) {
-        writeCache(cacheKey, dbMatch);
-        return dbMatch;
-      }
-      dbFallback = dbMatch;
+      writeCache(cacheKey, dbMatch);
+      return dbMatch;
     }
   } catch {}
 
@@ -747,16 +859,17 @@ export async function fetchMatchDetails(
     }
   } catch {}
 
-  // 3. Fetch directly from Valve / OpenDota API (to get live parsed replay timeline)
-  try {
-    const res = await fetch(`${BASE}/matches/${matchId}`, {
-      next: { revalidate: 3600 },
-    });
+  // 3. Fetch from Valve / OpenDota API if not rate limited
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch(`/matches/${matchId}`, {
+        next: { revalidate: 3600 },
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      const processed = processOpenDotaMatchData(data);
-      writeCache(cacheKey, processed);
+      if (res && res.ok) {
+        const data = await res.json();
+        const processed = processOpenDotaMatchData(data);
+        writeCache(cacheKey, processed);
 
       // If replay is not yet parsed, trigger background parse
       if (!processed.is_parsed) {
@@ -772,14 +885,10 @@ export async function fetchMatchDetails(
       } catch {}
 
       return processed;
+      }
+    } catch (e) {
+      console.warn(`Could not fetch match ${matchId} from API:`, e);
     }
-  } catch (e) {
-    console.warn(`Could not fetch match ${matchId} from API:`, e);
-  }
-
-  if (dbFallback) {
-    writeCache(cacheKey, dbFallback);
-    return dbFallback;
   }
 
   return readStaleCache<FullMatchDetails>(cacheKey);
@@ -1127,38 +1236,84 @@ export async function fetchHeroStats(): Promise<OpenDotaHeroStat[]> {
   const cacheKey = "hero_stats_all.json";
   const cached = readCache<OpenDotaHeroStat[]>(cacheKey, 300_000);
   if (cached && cached.length > 0) return cached;
-  try {
-    const res = await fetch(`${BASE}/heroStats`, { next: { revalidate: 300 } });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        writeCache(cacheKey, data);
-        return data;
+
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch('/heroStats', { next: { revalidate: 300 } });
+      if (res && res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          writeCache(cacheKey, data);
+          return data;
+        }
       }
+    } catch (e) {
+      console.warn("Could not fetch heroStats:", e);
     }
-  } catch (e) {
-    console.warn("Could not fetch heroStats:", e);
   }
-  return readStaleCache<OpenDotaHeroStat[]>(cacheKey) ?? [];
+
+  const stale = readStaleCache<OpenDotaHeroStat[]>(cacheKey);
+  if (stale && stale.length > 0) return stale;
+
+  const fallback = (heroStatsFallback as unknown as OpenDotaHeroStat[]) ?? [];
+  writeCache(cacheKey, fallback);
+  return fallback;
 }
 
 export async function fetchProMatches(limit = 25): Promise<OpenDotaProMatch[]> {
   const cacheKey = `pro_matches_${limit}.json`;
   const cached = readCache<OpenDotaProMatch[]>(cacheKey, 600_000);
   if (cached && cached.length > 0) return cached;
-  try {
-    const res = await fetch(`${BASE}/proMatches`, { next: { revalidate: 300 } });
-    if (res.ok) {
-      const data: OpenDotaProMatch[] = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        const sliced = data.slice(0, limit);
-        writeCache(cacheKey, sliced);
-        return sliced;
+
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch('/proMatches', { next: { revalidate: 300 } });
+      if (res && res.ok) {
+        const data: OpenDotaProMatch[] = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const sliced = data.slice(0, limit);
+          writeCache(cacheKey, sliced);
+          return sliced;
+        }
       }
+    } catch (e) {
+      console.warn("Could not fetch proMatches:", e);
     }
-  } catch (e) {
-    console.warn("Could not fetch proMatches:", e);
   }
+
+  // Fallback to local database matches
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    const dbMatches = await prisma.dotaMatch.findMany({
+      take: limit,
+      orderBy: { startTime: 'desc' },
+      select: {
+        matchId: true,
+        duration: true,
+        startTime: true,
+        radiantWin: true,
+        radiantScore: true,
+        direScore: true,
+        gameModeName: true,
+      },
+    });
+    if (dbMatches && dbMatches.length > 0) {
+      const mapped: OpenDotaProMatch[] = dbMatches.map((m) => ({
+        match_id: Number(m.matchId),
+        duration: m.duration,
+        start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
+        radiant_name: 'Radiant',
+        dire_name: 'Dire',
+        league_name: m.gameModeName || 'Ranked All Pick',
+        radiant_score: m.radiantScore,
+        dire_score: m.direScore,
+        radiant_win: m.radiantWin,
+      }));
+      writeCache(cacheKey, mapped);
+      return mapped;
+    }
+  } catch {}
+
   return readStaleCache<OpenDotaProMatch[]>(cacheKey) ?? [];
 }
 

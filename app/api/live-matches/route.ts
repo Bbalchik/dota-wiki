@@ -179,6 +179,55 @@ export async function GET(req: NextRequest) {
       finalMatches = [...proMatches, ...publicRankedMatches];
     }
 
+    // Database fallback if external API is empty or rate-limited
+    if (finalMatches.length === 0) {
+      try {
+        const { prisma } = await import("@/lib/prisma");
+        const dbMatches = await prisma.dotaMatch.findMany({
+          take: 30,
+          orderBy: { startTime: "desc" },
+        });
+
+        finalMatches = dbMatches.map((m) => {
+          let players: any[] = [];
+          try {
+            players = typeof m.playersJson === "string" ? JSON.parse(m.playersJson) : m.playersJson;
+          } catch {}
+
+          const radPlayers = players.filter((p) => p.player_slot < 128);
+          const direPlayers = players.filter((p) => p.player_slot >= 128);
+
+          const radHeroes = radPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+          const direHeroes = direPlayers.map((p) => p.hero_id || 0).filter(Boolean);
+
+          return {
+            match_id: Number(m.matchId),
+            match_seq_num: 0,
+            radiant_win: m.radiantWin,
+            start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
+            duration: m.duration,
+            lobby_type: m.lobbyType ?? 7,
+            game_mode: m.gameMode ?? 22,
+            game_mode_name: m.gameModeName || "Ranked All Pick",
+            avg_mmr: 6500,
+            num_mmr: 10,
+            avg_rank_tier: 80,
+            radiant_team: radHeroes,
+            dire_team: direHeroes,
+            radiant_score: m.radiantScore,
+            dire_score: m.direScore,
+            radiant_name: "Radiant",
+            dire_name: "Dire",
+            is_pro: false,
+            radiant_heroes: radHeroes.map(mapHero),
+            dire_heroes: direHeroes.map(mapHero),
+          };
+        });
+      } catch (err) {
+        console.warn("Could not query DB fallback matches:", err);
+      }
+    }
+
     return NextResponse.json(
       { matches: finalMatches, fetchedAt: Date.now() },
       {
