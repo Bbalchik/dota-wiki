@@ -34,8 +34,25 @@ export async function linkSteamAccount(formData: FormData) {
       // Offline or rate limit fallback
     }
 
+    let steamId64 = steamId;
+    let accountIdStr = steamId;
+    if (steamId.length > 10) {
+      try {
+        accountIdStr = String(BigInt(steamId) - BigInt("76561197960265728"));
+      } catch {}
+    } else {
+      try {
+        steamId64 = String(BigInt(steamId) + BigInt("76561197960265728"));
+      } catch {}
+    }
+
     const existing = await prisma.steamProfile.findFirst({
-      where: { steamId },
+      where: {
+        OR: [
+          { steamId: steamId64 },
+          { steamId: accountIdStr },
+        ],
+      },
     });
 
     if (existing) {

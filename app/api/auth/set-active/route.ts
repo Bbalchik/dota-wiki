@@ -16,25 +16,40 @@ export async function POST(req: NextRequest) {
     const personaName = pData?.profile?.personaname ?? `Игрок #${accountId}`;
     const avatarUrl = pData?.profile?.avatarfull ?? null;
 
-    const profile = await prisma.steamProfile.upsert({
-      where: { steamId: steamId64 },
-      update: {
-        personaName,
-        avatarUrl,
-        rankTier: pData?.rank_tier ?? 0,
-        leaderboardRank: pData?.leaderboard_rank ?? null,
-      },
-      create: {
-        steamId: steamId64,
-        personaName,
-        avatarUrl,
-        rankTier: pData?.rank_tier ?? 0,
-        leaderboardRank: pData?.leaderboard_rank ?? null,
-        currentMmr: pData?.mmr_estimate?.estimate ?? 0,
-        wins: 0,
-        losses: 0,
+    const existingProfile = await prisma.steamProfile.findFirst({
+      where: {
+        OR: [
+          { steamId: steamId64 },
+          { steamId: String(accountId) },
+        ],
       },
     });
+
+    let profile;
+    if (existingProfile) {
+      profile = await prisma.steamProfile.update({
+        where: { id: existingProfile.id },
+        data: {
+          personaName,
+          avatarUrl: avatarUrl || existingProfile.avatarUrl,
+          rankTier: pData?.rank_tier ?? existingProfile.rankTier,
+          leaderboardRank: pData?.leaderboard_rank ?? existingProfile.leaderboardRank,
+        },
+      });
+    } else {
+      profile = await prisma.steamProfile.create({
+        data: {
+          steamId: String(accountId),
+          personaName,
+          avatarUrl,
+          rankTier: pData?.rank_tier ?? 0,
+          leaderboardRank: pData?.leaderboard_rank ?? null,
+          currentMmr: pData?.mmr_estimate?.estimate ?? 0,
+          wins: 0,
+          losses: 0,
+        },
+      });
+    }
 
     const token = await createSessionToken({ steamId: steamId64, profileId: profile.id });
     const res = NextResponse.json({

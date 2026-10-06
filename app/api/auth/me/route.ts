@@ -35,9 +35,14 @@ export async function GET() {
     let personaName = `Игрок #${accountId}`;
     let avatarUrl: string | null = null;
 
-    if (steamId64) {
-      const dbProfile = await prisma.steamProfile.findUnique({
-        where: { steamId: steamId64 },
+    if (accountId) {
+      const dbProfile = await prisma.steamProfile.findFirst({
+        where: {
+          OR: [
+            ...(steamId64 ? [{ steamId: steamId64 }] : []),
+            { steamId: String(accountId) },
+          ],
+        },
       });
       if (dbProfile) {
         personaName = dbProfile.personaName;

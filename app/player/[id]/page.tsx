@@ -39,6 +39,23 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     }
   } catch {}
 
+  // Resolve Steam custom vanity name (e.g. /player/dendi)
+  if (isNaN(accountId) || accountId <= 0) {
+    try {
+      const res = await fetch(`https://steamcommunity.com/id/${id}/?xml=1`, { next: { revalidate: 3600 } });
+      if (res.ok) {
+        const text = await res.text();
+        const steamId64Str = text.match(/<steamID64>(\d+)<\/steamID64>/)?.[1];
+        if (steamId64Str) {
+          const big = BigInt(steamId64Str);
+          if (big > STEAM64_BASE) {
+            accountId = Number(big - STEAM64_BASE);
+          }
+        }
+      }
+    } catch {}
+  }
+
   if (isNaN(accountId) || accountId <= 0) {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-4">
@@ -172,72 +189,30 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   });
   const lastMatchDetails = recentMatches[0] ? (detailsByMatchId.get(Number(recentMatches[0].match_id)) ?? null) : null;
 
-  // Support for new/uncalibrated accounts or players with unparsed profiles who still have matches
+  // Support for new/uncalibrated accounts or players with unparsed profiles
   let effectivePlayer = playerData;
   if (!effectivePlayer?.profile) {
-    if (recentMatches.length > 0 || heroStats.length > 0) {
-      effectivePlayer = {
-        tracked_until: null,
-        solo_competitive_rank: null,
-        competitive_rank: null,
-        rank_tier: null,
-        leaderboard_rank: null,
-        profile: {
-          account_id: accountId,
-          personaname: (recentMatches[0] as any)?.personaname || `Игрок #${accountId}`,
-          name: null,
-          plus: false,
-          cheese: 0,
-          steamid: String(accountId),
-          avatar: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb.jpg',
-          avatarmedium: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg',
-          avatarfull: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg',
-          profileurl: `https://steamcommunity.com/profiles/${accountId}`,
-          last_login: null,
-          loccountrycode: null,
-        },
-      };
-    } else {
-      return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-4">
-          <div className="max-w-md w-full rounded-2xl border border-zinc-800/80 bg-zinc-900/60 backdrop-blur-md p-6 sm:p-8 text-center space-y-5 shadow-xl">
-            <div className="size-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 mx-auto flex items-center justify-center text-xl">
-              🛡️
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-bold text-zinc-100">История матчей закрыта</h2>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                У игрока <span className="font-mono font-bold text-amber-300">#{accountId}</span> в настройках Dota 2 отключена опция передачи истории матчей в сеть.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4 text-left text-xs space-y-2 text-zinc-400">
-              <div className="font-semibold text-zinc-200 text-[11px] uppercase tracking-wider">Как открыть статистику в Dota 2:</div>
-              <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed">
-                <li>Откройте клиент <strong>Dota 2</strong></li>
-                <li>Перейдите в <strong>Настройки ⚙️ → Сообщество</strong></li>
-                <li>Включите чекбокс <strong>«Общедоступная история матчей»</strong></li>
-              </ol>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
-              <Link
-                href="/heroes"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/60 px-4 py-2.5 text-xs font-medium text-zinc-200 transition"
-              >
-                <span>Мета и билды героев</span>
-              </Link>
-              <Link
-                href="/"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition"
-              >
-                <ArrowLeft className="size-3.5" /> На главную
-              </Link>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    effectivePlayer = {
+      tracked_until: null,
+      solo_competitive_rank: null,
+      competitive_rank: null,
+      rank_tier: null,
+      leaderboard_rank: null,
+      profile: {
+        account_id: accountId,
+        personaname: (recentMatches[0] as any)?.personaname || `Игрок #${accountId}`,
+        name: null,
+        plus: false,
+        cheese: 0,
+        steamid: String(accountId),
+        avatar: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb.jpg',
+        avatarmedium: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg',
+        avatarfull: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg',
+        profileurl: `https://steamcommunity.com/profiles/${accountId}`,
+        last_login: null,
+        loccountrycode: null,
+      },
+    };
   }
 
   const heroMap = new Map<number, OpenDotaHero>(allHeroes.map((h) => [h.id, h]));

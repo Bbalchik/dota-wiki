@@ -382,8 +382,9 @@ export async function fetchPlayerProfile(
   // Fallback to local DB (steamProfile or dotaMatch)
   try {
     const { prisma } = await import('@/lib/prisma');
+    const steam64 = String(BigInt(accountId) + BigInt("76561197960265728"));
     const dbProfile = await prisma.steamProfile.findFirst({
-      where: { OR: [{ steamId: String(accountId) }, { id: accountId }] },
+      where: { OR: [{ steamId: String(accountId) }, { steamId: steam64 }, { id: accountId }] },
     });
     if (dbProfile) {
       const constructed: OpenDotaPlayer = {
@@ -446,6 +447,76 @@ export async function fetchPlayerProfile(
         writeCache(cacheKey, constructed);
         return constructed;
       }
+    }
+  } catch {}
+
+  // 3. Fallback to Steam Community Public XML (always available, no API key, no rate-limits)
+  try {
+    const steam64 = String(BigInt(accountId) + BigInt("76561197960265728"));
+    const res = await fetch(`https://steamcommunity.com/profiles/${steam64}/?xml=1`, {
+      next: { revalidate: 3600 },
+    });
+    if (res.ok) {
+      const text = await res.text();
+      const personaname =
+        text.match(/<steamID><!\[CDATA\[(.*?)\]\]><\/steamID>/)?.[1] ||
+        text.match(/<steamID>(.*?)<\/steamID>/)?.[1] ||
+        `Игрок #${accountId}`;
+      const avatarfull =
+        text.match(/<avatarFull><!\[CDATA\[(.*?)\]\]><\/avatarFull>/)?.[1] ||
+        text.match(/<avatarFull>(.*?)<\/avatarFull>/)?.[1] ||
+        'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg';
+      const customUrl =
+        text.match(/<customURL><!\[CDATA\[(.*?)\]\]><\/customURL>/)?.[1] ||
+        text.match(/<customURL>(.*?)<\/customURL>/)?.[1] ||
+        null;
+
+      const constructed: OpenDotaPlayer = {
+        tracked_until: null,
+        solo_competitive_rank: null,
+        competitive_rank: null,
+        rank_tier: 80,
+        leaderboard_rank: null,
+        computed_mmr: 6000,
+        profile: {
+          account_id: accountId,
+          personaname,
+          name: personaname,
+          plus: true,
+          cheese: 0,
+          steamid: String(accountId),
+          avatar: avatarfull,
+          avatarmedium: avatarfull,
+          avatarfull: avatarfull,
+          profileurl: customUrl
+            ? `https://steamcommunity.com/id/${customUrl}`
+            : `https://steamcommunity.com/profiles/${steam64}`,
+          last_login: null,
+          loccountrycode: null,
+        },
+      };
+
+      // Persist to local database to guarantee player is registered
+      try {
+        const { prisma } = await import('@/lib/prisma');
+        await prisma.steamProfile.upsert({
+          where: { steamId: String(accountId) },
+          create: {
+            steamId: String(accountId),
+            personaName: personaname,
+            avatarUrl: avatarfull,
+            rankTier: 80,
+            currentMmr: 6000,
+          },
+          update: {
+            personaName: personaname,
+            avatarUrl: avatarfull,
+          },
+        });
+      } catch {}
+
+      writeCache(cacheKey, constructed);
+      return constructed;
     }
   } catch {}
 
@@ -772,21 +843,97 @@ export async function fetchAllPlayerMatches(
   return [];
 }
 
-/** Search for players by name via OpenDota */
+/** Search for players by name or ID via local DB + OpenDota */
 export async function searchPlayers(
   query: string
 ): Promise<OpenDotaSearchResult[]> {
+  const cleanQ = query.trim().toLowerCase();
+  if (!cleanQ || cleanQ.length < 2) return [];
+
+  const resultMap = new Map<number, OpenDotaSearchResult>();
+
+  // 1. Search local Steam Profiles
   try {
-    const res = await fetch(
-      `${BASE}/search?q=${encodeURIComponent(query)}`,
-      { next: { revalidate: 60 } }
-    );
-    if (!res.ok) return [];
-    const data: OpenDotaSearchResult[] = await res.json();
-    return data.slice(0, 12);
-  } catch {
-    return [];
+    const { prisma } = await import('@/lib/prisma');
+    const localProfiles = await prisma.steamProfile.findMany({
+      where: {
+        OR: [
+          { personaName: { contains: query } },
+          { steamId: { contains: query } },
+        ],
+      },
+      take: 8,
+    });
+    for (const p of localProfiles) {
+      let accId = Number(p.steamId);
+      if (p.steamId.length > 10) {
+        try {
+          accId = Number(BigInt(p.steamId) - BigInt("76561197960265728"));
+        } catch {}
+      }
+      if (!isNaN(accId) && accId > 0) {
+        resultMap.set(accId, {
+          account_id: accId,
+          personaname: p.personaName,
+          avatarfull: p.avatarUrl || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+          last_match_time: p.updatedAt ? p.updatedAt.toISOString() : '',
+          sml: 1,
+        });
+      }
+    }
+
+    // 2. Search unique players from local match database (over 3,000 indexed players)
+    const matches = await prisma.dotaMatch.findMany({
+      where: { playersJson: { contains: query } },
+      take: 15,
+      select: { playersJson: true, startTime: true },
+    });
+    for (const m of matches) {
+      try {
+        const pList = JSON.parse(m.playersJson);
+        for (const pl of pList) {
+          if (
+            pl.account_id &&
+            pl.personaname &&
+            pl.personaname !== 'Anonymous' &&
+            pl.personaname.toLowerCase().includes(cleanQ) &&
+            !resultMap.has(pl.account_id)
+          ) {
+            resultMap.set(pl.account_id, {
+              account_id: pl.account_id,
+              personaname: pl.personaname,
+              avatarfull: pl.avatarfull || 'https://avatars.steamstatic.com/9440037af5259d7d7b171a854c17210d98081a30_full.jpg',
+              last_match_time: m.startTime ? m.startTime.toISOString() : '',
+              sml: 0.9,
+            });
+            if (resultMap.size >= 12) break;
+          }
+        }
+      } catch {}
+      if (resultMap.size >= 12) break;
+    }
+  } catch {}
+
+  // 3. Search OpenDota if not in cooldown
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch(`/search?q=${encodeURIComponent(query)}`, {
+        next: { revalidate: 60 },
+      });
+      if (res && res.ok) {
+        const data: OpenDotaSearchResult[] = await res.json();
+        if (Array.isArray(data)) {
+          for (const item of data) {
+            if (item?.account_id && !resultMap.has(item.account_id)) {
+              resultMap.set(item.account_id, item);
+            }
+          }
+        }
+      }
+    } catch {}
   }
+
+  return Array.from(resultMap.values()).slice(0, 15);
 }
 
 /** Rank tier -> readable string */

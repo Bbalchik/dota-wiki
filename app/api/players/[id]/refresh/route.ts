@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clearPlayerCache } from "@/lib/opendota";
+import { clearPlayerCache, fetchPlayerProfile } from "@/lib/opendota";
 
 export async function POST(
   request: NextRequest,
@@ -16,20 +16,24 @@ export async function POST(
     // 1. Invalidate local in-memory cache
     clearPlayerCache(accountId);
 
-    // 2. Send refresh request to OpenDota to sync latest matches from Valve Steam API
-    const res = await fetch(`https://api.opendota.com/api/players/${accountId}/refresh`, {
+    // 2. Fetch fresh profile via OpenDota or Steam Public XML & persist to DB
+    const playerData = await fetchPlayerProfile(accountId);
+
+    // 3. Proactively queue OpenDota replay crawler in the background
+    fetch(`https://api.opendota.com/api/players/${accountId}/refresh`, {
       method: "POST",
-    });
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,
-      status: res.status,
-      message: "Синхронизация отправлена в очередь Steam и OpenDota",
+      personaName: playerData?.profile?.personaname ?? `Игрок #${accountId}`,
+      avatarUrl: playerData?.profile?.avatarfull ?? null,
+      message: "Профиль успешно обновлен и поставлен в очередь синхронизации со Steam",
     });
   } catch (e: any) {
     return NextResponse.json({
       success: false,
-      message: e?.message || "Ошибка отправки запроса",
+      message: e?.message || "Ошибка обновления профиля",
     });
   }
 }

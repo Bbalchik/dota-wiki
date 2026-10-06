@@ -30,26 +30,41 @@ export async function GET(request: NextRequest) {
   const leaderboardRank = playerData?.leaderboard_rank ?? null;
   const mmrEstimate = playerData?.mmr_estimate?.estimate ?? 0;
 
-  // 4. Upsert profile in our database
-  const profile = await prisma.steamProfile.upsert({
-    where: { steamId: steamId64 },
-    update: {
-      personaName,
-      avatarUrl,
-      rankTier: rankTier ?? 0,
-      leaderboardRank,
-    },
-    create: {
-      steamId: steamId64,
-      personaName,
-      avatarUrl,
-      rankTier: rankTier ?? 0,
-      leaderboardRank,
-      currentMmr: mmrEstimate,
-      wins: 0,
-      losses: 0,
+  // 4. Find or create profile in our database
+  const existingProfile = await prisma.steamProfile.findFirst({
+    where: {
+      OR: [
+        { steamId: steamId64 },
+        { steamId: String(accountId) },
+      ],
     },
   });
+
+  let profile;
+  if (existingProfile) {
+    profile = await prisma.steamProfile.update({
+      where: { id: existingProfile.id },
+      data: {
+        personaName,
+        avatarUrl: avatarUrl || existingProfile.avatarUrl,
+        rankTier: rankTier ?? existingProfile.rankTier,
+        leaderboardRank: leaderboardRank ?? existingProfile.leaderboardRank,
+      },
+    });
+  } else {
+    profile = await prisma.steamProfile.create({
+      data: {
+        steamId: String(accountId),
+        personaName,
+        avatarUrl,
+        rankTier: rankTier ?? 0,
+        leaderboardRank,
+        currentMmr: mmrEstimate,
+        wins: 0,
+        losses: 0,
+      },
+    });
+  }
 
   // 5. Create session cookie token and attach to 302 redirect response
   const token = await createSessionToken({ steamId: steamId64, profileId: profile.id });

@@ -9,7 +9,7 @@ import type { OpenDotaSearchResult } from "@/lib/opendota";
 const STEAM64_BASE = BigInt("76561197960265728");
 
 export type SmartTargetOption =
-  | { type: "player"; accountId: number; label: string; desc: string }
+  | { type: "player"; accountId: number | string; label: string; desc: string }
   | { type: "match"; matchId: string; label: string; desc: string };
 
 /** Parses smart input: Dota Match ID, Steam ID, Account ID, or profile/match URLs */
@@ -57,6 +57,19 @@ export function parseSmartInputs(raw: string): SmartTargetOption[] {
     ];
   }
 
+  // Steam Community Custom URL: e.g. steamcommunity.com/id/customname
+  const steamVanityMatch = s.match(/id\/([a-zA-Z0-9_-]+)/i);
+  if (steamVanityMatch) {
+    return [
+      {
+        type: "player",
+        accountId: steamVanityMatch[1],
+        label: `Steam Профиль (${steamVanityMatch[1]})`,
+        desc: "Поиск профиля Steam в Dota 2",
+      },
+    ];
+  }
+
   // Pure numeric check
   if (/^\d+$/.test(s)) {
     const n = BigInt(s);
@@ -75,17 +88,7 @@ export function parseSmartInputs(raw: string): SmartTargetOption[] {
 
     const options: SmartTargetOption[] = [];
 
-    // If 8 to 11 digits, could be a Dota 2 match
-    if (s.length >= 8 && s.length <= 11) {
-      options.push({
-        type: "match",
-        matchId: s,
-        label: `Матч Dota 2 #${s}`,
-        desc: "Поминутный разбор, все 10 игроков, тайминги и инвентарь",
-      });
-    }
-
-    // It can also be an account ID if <= 4294967296
+    // All numbers <= 4,294,967,296 are Dota 2 32-bit Account IDs -> Prioritize PLAYER first!
     if (n > 0 && n <= BigInt("4294967296")) {
       options.push({
         type: "player",
@@ -95,9 +98,20 @@ export function parseSmartInputs(raw: string): SmartTargetOption[] {
       });
     }
 
-    // For short numbers (< 8 digits), prioritize player first
-    if (s.length < 8 && n > 0 && n <= BigInt("4294967296")) {
-      options.reverse();
+    // If 8 to 11 digits, could also be a Dota 2 match
+    if (s.length >= 8 && s.length <= 11) {
+      const isLikelyMatch = n >= BigInt("6000000000");
+      const matchOpt: SmartTargetOption = {
+        type: "match",
+        matchId: s,
+        label: `Матч Dota 2 #${s}`,
+        desc: "Поминутный разбор, все 10 игроков, тайминги и инвентарь",
+      };
+      if (isLikelyMatch) {
+        options.unshift(matchOpt);
+      } else {
+        options.push(matchOpt);
+      }
     }
 
     return options;
