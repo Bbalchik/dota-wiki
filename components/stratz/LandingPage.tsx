@@ -96,16 +96,6 @@ export function LandingPage({ heroes = [] }: LandingPageProps) {
           </div>
         </section>
 
-        {/* ── 3. Как это работает? (Официальное описание) ── */}
-        <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 backdrop-blur-xl p-6 sm:p-7 shadow-sm space-y-3">
-          <div className="flex items-center gap-2.5 text-zinc-100 font-bold text-base sm:text-lg">
-            <Sparkles className="size-4 text-amber-400" />
-            <h2>Как это работает?</h2>
-          </div>
-          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans">
-            Мы учитываем каждый публичный матч, сыгранный в Dota 2. Основываясь на собранной информации, совмещенной с огромным количеством данных, получаемых из записей игр, сообщества Steam и других ресурсов, мы предлагаем уникальную и персональную статистику для каждого игрока Dota 2. Вы можете найти свой игровой профиль войдя через Steam, либо с помощью поиска вашего игрового имени или Steam ID.
-          </p>
-        </section>
 
         {/* ── 4. What You Get for Solo Analytics (Features) ── */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
