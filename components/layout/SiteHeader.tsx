@@ -154,18 +154,7 @@ export function SiteHeader({
                 : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
             }`}
           >
-            Главная
-          </Link>
-          <Link
-            href="/heroes"
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-              currentPath === "/heroes"
-                ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
-            }`}
-          >
-            <Swords className="size-3.5 text-zinc-400" />
-            <span>Мета & Билды</span>
+            Матчи игрока
           </Link>
           <Link
             href="/matches"
@@ -175,11 +164,7 @@ export function SiteHeader({
                 : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
             }`}
           >
-            <span className="relative flex size-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full size-2 bg-emerald-400" />
-            </span>
-            <span>Лайв матчи</span>
+            <span>База матчей</span>
           </Link>
         </nav>
 

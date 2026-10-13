@@ -139,19 +139,11 @@ export function LandingPage({ heroes = [] }: LandingPageProps) {
         {/* ── 5. Quick Direct Links ── */}
         <section className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs">
           <Link
-            href="/heroes"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
-          >
-            <Swords className="size-3.5 text-zinc-400" />
-            <span>Мета и тир-лист всех героев</span>
-          </Link>
-
-          <Link
             href="/matches"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
           >
             <Database className="size-3.5 text-zinc-400" />
-            <span>База данных матчей</span>
+            <span>База всех матчей</span>
           </Link>
         </section>
       </main>
