@@ -1,15 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Shield,
   Swords,
-  TrendingUp,
   Clock,
   Zap,
-  ArrowRight,
   Sparkles,
   CheckCircle2,
   Database,
@@ -26,26 +22,13 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ heroes = [] }: LandingPageProps) {
-  const router = useRouter();
-  const [customId, setCustomId] = useState("");
-
-  const handleOpenProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = customId.trim().replace(/\D/g, "");
-    if (clean && Number(clean) > 0) {
-      // Also save as active account so user doesn't have to enter it again
-      document.cookie = `active_account_id=${clean}; path=/; max-age=2592000; SameSite=Lax`;
-      router.push(`/player/${clean}`);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans antialiased selection:bg-zinc-700 selection:text-white">
       <SiteHeader currentPath="/" />
 
-      <main className="flex-1 px-4 sm:px-6 py-10 sm:py-16 max-w-5xl mx-auto w-full space-y-12">
+      <main className="flex-1 px-4 sm:px-6 py-10 sm:py-16 max-w-4xl mx-auto w-full space-y-10">
         {/* ── 1. Hero Solo-Tracker Banner ── */}
-        <section className="flex flex-col items-center text-center space-y-4 max-w-3xl mx-auto pt-2 sm:pt-6">
+        <section className="flex flex-col items-center text-center space-y-4 max-w-2xl mx-auto pt-2 sm:pt-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-4 py-1.5 text-xs font-semibold text-zinc-300 shadow-sm">
             <Shield className="size-3.5 text-zinc-400" />
             <span>Персональный трекер Dota 2 · Соло-аналитика</span>
@@ -56,20 +39,20 @@ export function LandingPage({ heroes = [] }: LandingPageProps) {
             <span className="text-zinc-400">без лишнего мусора</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-            Вся аналитика сфокусирована только на твоем аккаунте. Реальный винрейт, количество побед и поражений, детальные сборки и тайминги — без сторонних токенов и фейковых данных.
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed">
+            Вся аналитика сфокусирована только на твоём аккаунте: реальный винрейт, победы и поражения, тайминги предметов и сборки — без сторонних токенов.
           </p>
         </section>
 
         {/* ── 2. Primary Account Login / Connect Card ── */}
         <section className="w-full max-w-xl mx-auto">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/70 backdrop-blur-xl p-6 sm:p-8 shadow-xl space-y-5">
             <div className="space-y-1 text-center">
               <h2 className="text-lg font-bold text-zinc-100">
                 Подключите ваш аккаунт Dota 2
               </h2>
               <p className="text-xs text-zinc-400">
-                Выберите один из двух простых способов для просмотра своей соло-статистики:
+                Войдите через Steam или найдите свой профиль по имени / ID:
               </p>
             </div>
 
@@ -96,40 +79,36 @@ export function LandingPage({ heroes = [] }: LandingPageProps) {
                 <div className="w-full border-t border-zinc-800" />
               </div>
               <span className="relative bg-zinc-900 px-3 text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-                или введите ID аккаунта
+                или найдите свой профиль
               </span>
             </div>
 
-            {/* Option B: Enter Account ID Form */}
-            <form onSubmit={handleOpenProfile} className="space-y-3">
-              <div className="space-y-1.5">
-                <input
-                  type="text"
-                  placeholder="Ваш Dota 2 Account ID (например 12345678)..."
-                  value={customId}
-                  onChange={(e) => setCustomId(e.target.value.replace(/\D/g, ""))}
-                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 font-mono outline-none focus:border-zinc-600 transition"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!customId.trim()}
-                className="w-full py-3 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-750 disabled:opacity-40 disabled:pointer-events-none text-zinc-100 font-semibold text-xs transition border border-zinc-700/60 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Открыть мою статистику</span>
-                <ArrowRight className="size-3.5" />
-              </button>
-
+            {/* Option B: Search by Player Name or Steam ID */}
+            <div className="space-y-2">
+              <PlayerSearchBar
+                placeholder="Поиск по игровому имени, Steam ID или Account ID..."
+                className="w-full"
+              />
               <p className="text-[11px] text-zinc-500 text-center leading-relaxed">
-                Где найти ID: откройте свой профиль в клиенте Dota 2 — номер под никнеймом и есть ваш Account ID.
+                Введите никнейм в игре, 32-битный ID из профиля Dota 2 или SteamID64.
               </p>
-            </form>
+            </div>
           </div>
         </section>
 
-        {/* ── 3. What You Get for Solo Analytics (Features) ── */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        {/* ── 3. Как это работает? (Официальное описание) ── */}
+        <section className="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 backdrop-blur-xl p-6 sm:p-7 shadow-sm space-y-3">
+          <div className="flex items-center gap-2.5 text-zinc-100 font-bold text-base sm:text-lg">
+            <Sparkles className="size-4 text-amber-400" />
+            <h2>Как это работает?</h2>
+          </div>
+          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans">
+            Мы учитываем каждый публичный матч, сыгранный в Dota 2. Основываясь на собранной информации, совмещенной с огромным количеством данных, получаемых из записей игр, сообщества Steam и других ресурсов, мы предлагаем уникальную и персональную статистику для каждого игрока Dota 2. Вы можете найти свой игровой профиль войдя через Steam, либо с помощью поиска вашего игрового имени или Steam ID.
+          </p>
+        </section>
+
+        {/* ── 4. What You Get for Solo Analytics (Features) ── */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5 space-y-2.5">
             <div className="size-9 rounded-xl bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300">
               <CheckCircle2 className="size-4 text-emerald-400" />
@@ -167,8 +146,8 @@ export function LandingPage({ heroes = [] }: LandingPageProps) {
           </div>
         </section>
 
-        {/* ── 4. Quick Direct Links ── */}
-        <section className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-zinc-800/80 text-xs">
+        {/* ── 5. Quick Direct Links ── */}
+        <section className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs">
           <Link
             href="/heroes"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition"
