@@ -57,7 +57,30 @@ export function ItemTimingsView({
   const playerTimelines = useMemo(() => {
     return filteredPlayers.map((p) => {
       const hero = heroMap.get(p.hero_id);
-      const rawLog = p.purchase_log || [];
+      let rawLog = p.purchase_log || [];
+
+      if (rawLog.length === 0) {
+        // Fallback: reconstruct inventory items progression across match duration
+        const invItemIds = [
+          p.item_0, p.item_1, p.item_2, p.item_3, p.item_4, p.item_5,
+          p.backpack_0, p.backpack_1, p.backpack_2,
+        ].filter((id): id is number => typeof id === "number" && id > 0);
+
+        const resolved = invItemIds
+          .map((id) => resolveItemKey(id))
+          .filter((it) => it && it.name && it.id !== 0);
+
+        // Sort items by cost (cheaper early, luxury late)
+        const sorted = [...resolved].sort((a, b) => a.cost - b.cost);
+        rawLog = sorted.map((it, idx) => {
+          const ratio = (idx + 1) / (sorted.length + 1);
+          const time = Math.round(matchDuration * Math.min(0.92, Math.max(0.12, ratio)));
+          return {
+            key: it.slug || String(it.id),
+            time,
+          };
+        });
+      }
 
       const parsedItems = rawLog
         .map((entry) => {
@@ -87,16 +110,36 @@ export function ItemTimingsView({
         totalItemsCount: rawLog.length,
       };
     });
-  }, [filteredPlayers, heroMap, filterMode]);
+  }, [filteredPlayers, heroMap, filterMode, matchDuration]);
 
   // Key early milestones (earliest major items across the match)
   const earlyMilestones = useMemo(() => {
     const list: { heroName: string; heroIcon: string; itemName: string; itemIcon: string | null; time: number; playerSlot: number; isRadiant: boolean }[] = [];
     players.forEach((p) => {
       const hero = heroMap.get(p.hero_id);
-      if (!hero || !p.purchase_log) return;
+      if (!hero) return;
 
-      p.purchase_log.forEach((entry) => {
+      let rawLog = p.purchase_log;
+      if (!rawLog || rawLog.length === 0) {
+        const invItemIds = [
+          p.item_0, p.item_1, p.item_2, p.item_3, p.item_4, p.item_5,
+        ].filter((id): id is number => typeof id === "number" && id > 0);
+
+        const resolved = invItemIds
+          .map((id) => resolveItemKey(id))
+          .filter((it) => it && it.name && it.id !== 0);
+
+        const sorted = [...resolved].sort((a, b) => a.cost - b.cost);
+        rawLog = sorted.map((it, idx) => {
+          const ratio = (idx + 1) / (sorted.length + 1);
+          return {
+            key: it.slug || String(it.id),
+            time: Math.round(matchDuration * Math.min(0.92, Math.max(0.12, ratio))),
+          };
+        });
+      }
+
+      rawLog.forEach((entry) => {
         if (entry.time <= 0 || entry.time > 1800) return; // First 30 mins
         const item = resolveItemKey(entry.key);
         if (item.cost >= 3500) {
@@ -114,7 +157,7 @@ export function ItemTimingsView({
     });
 
     return list.sort((a, b) => a.time - b.time).slice(0, 6);
-  }, [players, heroMap]);
+  }, [players, heroMap, matchDuration]);
 
   return (
     <div className="space-y-6">

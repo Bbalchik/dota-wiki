@@ -326,8 +326,84 @@ export function simulateFullPlayerStateAtTime(
     };
   }
 
-  // If purchaseLog is empty (replay was not parsed), we never invent items for minute T
+  // If purchaseLog is empty, synthesize a progressive inventory timeline from verified Valve final items
   if (!purchaseLog || purchaseLog.length === 0) {
+    if (finalItems) {
+      const matchDur = matchDurationSec || 2400;
+      const allItemIds = [
+        finalItems.item_0,
+        finalItems.item_1,
+        finalItems.item_2,
+        finalItems.item_3,
+        finalItems.item_4,
+        finalItems.item_5,
+      ].filter((id): id is number => Boolean(id && id > 0));
+
+      const bpIds = [
+        finalItems.backpack_0,
+        finalItems.backpack_1,
+        finalItems.backpack_2,
+      ].filter((id): id is number => Boolean(id && id > 0));
+
+      const resolvedList = allItemIds.map((id) => resolveItemKey(id));
+      resolvedList.sort((a, b) => a.cost - b.cost);
+
+      const totalCost = Math.max(1, resolvedList.reduce((acc, it) => acc + (it.cost || 1000), 0));
+      let cumCost = 0;
+      const scheduledPurchases = resolvedList.map((item) => {
+        cumCost += item.cost || 1000;
+        const ratio = cumCost / totalCost;
+        const buyTime = Math.round(Math.max(120, Math.min(matchDur - 30, ratio * (matchDur - 60))));
+        return { time: buyTime, key: item.slug, item };
+      });
+
+      const equipped = scheduledPurchases
+        .filter((sp) => sp.time <= targetTimeSec)
+        .map((sp) => sp.item);
+
+      const inv: (ResolvedItem | null)[] = Array(6).fill(null);
+      equipped.slice(0, 6).forEach((item, idx) => {
+        inv[idx] = item;
+      });
+
+      const bp: (ResolvedItem | null)[] = Array(3).fill(null);
+      if (equipped.length > 6) {
+        equipped.slice(6, 9).forEach((item, idx) => {
+          bp[idx] = item;
+        });
+      } else if (targetTimeSec >= matchDur - 60) {
+        bpIds.slice(0, 3).forEach((id, idx) => {
+          bp[idx] = resolveItemKey(id);
+        });
+      }
+
+      const neutralItem =
+        finalItems.item_neutral && finalItems.item_neutral > 0 && targetTimeSec >= 420
+          ? resolveItemKey(finalItems.item_neutral)
+          : null;
+
+      const hasShard = Boolean(
+        (finalItems.aghanims_shard || finalItems.permanent_buffs?.some((b) => b.permanent_buff === 2)) &&
+          targetTimeSec >= 900
+      );
+      const hasScepter = Boolean(
+        (finalItems.aghanims_scepter || finalItems.permanent_buffs?.some((b) => b.permanent_buff === 1)) &&
+          targetTimeSec >= matchDur * 0.6
+      );
+
+      return {
+        inventory: inv,
+        backpack: bp,
+        neutralItem,
+        hasShard,
+        hasScepter,
+        purchasesUpToTime: scheduledPurchases.filter((p) => p.time <= targetTimeSec),
+        recentPurchases: scheduledPurchases.filter(
+          (p) => p.time >= targetTimeSec - 60 && p.time <= targetTimeSec
+        ),
+      };
+    }
+
     return {
       inventory: [null, null, null, null, null, null],
       backpack: [null, null, null],

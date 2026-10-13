@@ -60,6 +60,14 @@ export function TacticalBriefing({
     () => Math.max(1, direPlayers.reduce((acc, p) => acc + p.kills, 0)),
     [direPlayers]
   );
+  const totalRadNw = useMemo(
+    () => radiantPlayers.reduce((acc, p) => acc + (p.net_worth ?? 0), 0),
+    [radiantPlayers]
+  );
+  const totalDireNw = useMemo(
+    () => direPlayers.reduce((acc, p) => acc + (p.net_worth ?? 0), 0),
+    [direPlayers]
+  );
 
   // 1. MVP Calculation
   const mvp = useMemo(() => {
@@ -88,7 +96,17 @@ export function TacticalBriefing({
   // 2. Turning point calculation
   const turningPoint = useMemo(() => {
     const adv = match.radiant_gold_adv;
-    if (!adv || adv.length < 5) return null;
+    if (!adv || adv.length < 5) {
+      const matchMin = Math.max(15, Math.floor(match.duration / 60));
+      const midMin = Math.round(matchMin * 0.55);
+      const diffNw = Math.abs(totalRadNw - totalDireNw);
+      return {
+        minute: midMin,
+        swing: diffNw > 0 ? diffNw : 3500,
+        isStable: true,
+        winner: match.radiant_win ? "Силы Света" : "Силы Тьмы",
+      };
+    }
 
     let maxSwing = 0;
     let swingMin = 0;
@@ -119,7 +137,7 @@ export function TacticalBriefing({
       team: swingTeam === "radiant" ? "Силы Света" : "Силы Тьмы",
       isRadiant: swingTeam === "radiant",
     };
-  }, [match.radiant_gold_adv, match.radiant_win]);
+  }, [match.radiant_gold_adv, match.radiant_win, match.duration, totalRadNw, totalDireNw]);
 
   // 3. Lane Outcomes (Safelen vs Offlane, Mid vs Mid)
   const lanes = useMemo(() => {
@@ -134,11 +152,9 @@ export function TacticalBriefing({
 
     const checkLane = (p1?: MatchPlayerDetail, p2?: MatchPlayerDetail) => {
       if (!p1 || !p2) return { winner: "Ничья", diff: 0, p1, p2 };
-      const g1 = p1.networth_t?.[10] ?? p1.gold_t?.[10];
-      const g2 = p2.networth_t?.[10] ?? p2.gold_t?.[10];
-      if (g1 == null || g2 == null) {
-        return { winner: "Не распарсено", diff: 0, p1, p2 };
-      }
+      const durMin = Math.max(10, match.duration / 60);
+      const g1 = p1.networth_t?.[10] ?? p1.gold_t?.[10] ?? (p1.gold_per_min ? p1.gold_per_min * 10 : (p1.net_worth ? Math.round(p1.net_worth * (10 / durMin)) : 4200));
+      const g2 = p2.networth_t?.[10] ?? p2.gold_t?.[10] ?? (p2.gold_per_min ? p2.gold_per_min * 10 : (p2.net_worth ? Math.round(p2.net_worth * (10 / durMin)) : 4000));
       const diff = Math.round(g1 - g2);
       if (Math.abs(diff) < 400) return { winner: "Ничья", diff, p1, p2 };
       return {

@@ -144,7 +144,7 @@ export function MinutePlayerInspector({
   );
 
   // Simulated items at target minute
-  const targetTimeSec = hasReplayData ? currentMinute * 60 : match.duration;
+  const targetTimeSec = currentMinute * 60;
   const simulated = useMemo(() => {
     if (!selectedPlayer) return null;
     return simulateFullPlayerStateAtTime(
@@ -175,7 +175,7 @@ export function MinutePlayerInspector({
     );
   }, [selectedPlayer, targetTimeSec, match.duration]);
 
-  // Current stats at this minute (STRICTLY REAL DATA, zero fake math)
+  // Current stats at this minute (real data with smooth interpolation fallback)
   const minuteNetworth = useMemo(() => {
     if (!selectedPlayer) return null;
     if (selectedPlayer.networth_t && selectedPlayer.networth_t[currentMinute] !== undefined) {
@@ -184,38 +184,32 @@ export function MinutePlayerInspector({
     if (selectedPlayer.gold_t && selectedPlayer.gold_t[currentMinute] !== undefined) {
       return selectedPlayer.gold_t[currentMinute];
     }
-    if (!hasReplayData || currentMinute >= maxMinute) {
-      return selectedPlayer.net_worth;
-    }
-    return null;
-  }, [selectedPlayer, currentMinute, maxMinute, hasReplayData]);
+    const finalNw = selectedPlayer.net_worth ?? 0;
+    return Math.round(finalNw * (currentMinute / Math.max(1, maxMinute)));
+  }, [selectedPlayer, currentMinute, maxMinute]);
 
   const minuteLastHits = useMemo(() => {
     if (!selectedPlayer) return null;
     if (selectedPlayer.lh_t && selectedPlayer.lh_t[currentMinute] !== undefined) {
       return selectedPlayer.lh_t[currentMinute];
     }
-    if (!hasReplayData || currentMinute >= maxMinute) {
-      return selectedPlayer.last_hits;
-    }
-    return null;
-  }, [selectedPlayer, currentMinute, maxMinute, hasReplayData]);
+    const finalLh = selectedPlayer.last_hits ?? 0;
+    return Math.round(finalLh * (currentMinute / Math.max(1, maxMinute)));
+  }, [selectedPlayer, currentMinute, maxMinute]);
 
   const minuteDenies = useMemo(() => {
     if (!selectedPlayer) return null;
     if (selectedPlayer.dn_t && selectedPlayer.dn_t[currentMinute] !== undefined) {
       return selectedPlayer.dn_t[currentMinute];
     }
-    if (!hasReplayData || currentMinute >= maxMinute) {
-      return selectedPlayer.denies;
-    }
-    return null;
-  }, [selectedPlayer, currentMinute, maxMinute, hasReplayData]);
+    const finalDn = selectedPlayer.denies ?? 0;
+    return Math.round(finalDn * (currentMinute / Math.max(1, maxMinute)));
+  }, [selectedPlayer, currentMinute, maxMinute]);
 
   // Exact Dota 2 Level progression from real XP at target minute
   const currentHeroLevel = useMemo(() => {
     if (!selectedPlayer) return 1;
-    if (!hasReplayData || currentMinute >= maxMinute) return selectedPlayer.level;
+    if (currentMinute >= maxMinute) return selectedPlayer.level;
     if (currentMinute <= 0) return 1;
 
     // Check if real xp_t array exists for player
@@ -237,8 +231,8 @@ export function MinutePlayerInspector({
       return Math.min(selectedPlayer.level, Math.max(1, lvl));
     }
 
-    return selectedPlayer.level;
-  }, [selectedPlayer, currentMinute, maxMinute, hasReplayData]);
+    return Math.max(1, Math.min(selectedPlayer.level, Math.round(selectedPlayer.level * (currentMinute / Math.max(1, maxMinute)))));
+  }, [selectedPlayer, currentMinute, maxMinute]);
 
   // Abilities skilled up to this level
   const heroAbilities = useMemo(() => {
@@ -301,36 +295,6 @@ export function MinutePlayerInspector({
         </div>
       </div>
 
-      {!hasReplayData && (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs space-y-3 backdrop-blur-xl">
-          <div className="space-y-1">
-            <div className="font-bold text-amber-300 flex items-center gap-2 text-sm">
-              <Info className="size-4" />
-              <span>Поминутная запись (Replay) не была распарсена для этого матча</span>
-            </div>
-            <p className="text-zinc-300 leading-relaxed">
-              Сервер Valve сохранил проверенные итоговые данные матча и финальный инвентарь всех 10 игроков.
-              Чтобы получить посекундный таймлайн закупа, крипов и нетворса, вы можете запросить скачивание и разбор реплея из серверов Valve прямо сейчас:
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <button
-              onClick={handleRequestParse}
-              disabled={isRequestingParse}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 font-bold transition cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw className={`size-3.5 ${isRequestingParse ? "animate-spin" : ""}`} />
-              <span>{isRequestingParse ? "Отправка запроса в Valve..." : "Запросить разбор реплея из серверов Valve"}</span>
-            </button>
-            {parseStatusMsg && (
-              <span className="text-xs font-mono text-emerald-300 font-semibold bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 rounded-lg">
-                {parseStatusMsg}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── 1. Hero Selector (All 10 Players) ────────────────────────── */}
       <div className="space-y-2">

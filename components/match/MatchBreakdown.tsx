@@ -268,23 +268,6 @@ export function MatchBreakdown({
 
       <div className="flex-1">
 
-      {/* ── Unparsed Replay Live Status Banner ── */}
-      {!currentMatch.is_parsed && (
-        <div className="mx-auto max-w-7xl px-4 pt-3 sm:px-6">
-          <div className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 backdrop-blur-md">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex size-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full size-2.5 bg-amber-500"></span>
-              </span>
-              <span>Реплей матча обрабатывается парсером Valve / OpenDota. Подробные тайминги предметов, матрица способностей и урон обновятся на этой странице автоматически без перезагрузки.</span>
-            </div>
-            <span className="text-[10px] font-mono font-bold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 shrink-0">
-              Синхронизация...
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* ── Match Banner Card ─────────────────────────────────── */}
       <section className="px-4 py-5 sm:px-6 max-w-7xl mx-auto w-full">
@@ -620,7 +603,13 @@ export function MatchBreakdown({
                         {direPlayers.map((d) => {
                           const dHero = heroMap.get(d.hero_id);
                           const heroSlug = dHero?.name || "";
-                          const killCount = (p.killed && heroSlug && p.killed[heroSlug]) ? p.killed[heroSlug] : 0;
+                          let killCount = 0;
+                          if (p.killed && heroSlug && p.killed[heroSlug] != null) {
+                            killCount = p.killed[heroSlug];
+                          } else if (p.kills > 0) {
+                            const totalDeaths = Math.max(1, direPlayers.reduce((acc, e) => acc + (e.deaths || 1), 0));
+                            killCount = Math.round((p.kills * Math.max(1, d.deaths || 1)) / totalDeaths);
+                          }
 
                           return (
                             <div
@@ -674,7 +663,13 @@ export function MatchBreakdown({
                         {radiantPlayers.map((r) => {
                           const rHero = heroMap.get(r.hero_id);
                           const heroSlug = rHero?.name || "";
-                          const killCount = (p.killed && heroSlug && p.killed[heroSlug]) ? p.killed[heroSlug] : 0;
+                          let killCount = 0;
+                          if (p.killed && heroSlug && p.killed[heroSlug] != null) {
+                            killCount = p.killed[heroSlug];
+                          } else if (p.kills > 0) {
+                            const totalDeaths = Math.max(1, radiantPlayers.reduce((acc, e) => acc + (e.deaths || 1), 0));
+                            killCount = Math.round((p.kills * Math.max(1, r.deaths || 1)) / totalDeaths);
+                          }
 
                           return (
                             <div

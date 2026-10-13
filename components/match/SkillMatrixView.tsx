@@ -100,29 +100,106 @@ export function SkillMatrixView({
           const rawUpgrades = p.ability_upgrades_arr || [];
           const abilities = hero ? getHeroAbilities(hero.name) : [];
 
-          // Resolve each upgrade in order
-          const skillEvents = rawUpgrades.map((val, idx) => {
-            const levelNum = idx + 1;
-            const rawId = typeof val === "number" ? String(val) : String(val);
-            const abilitySlug = abilityIdsMap[rawId] || `ability_${rawId}`;
-            const isTalent = abilitySlug.startsWith("special_bonus_") || abilitySlug === "talent";
-            const isAttribute = rawId === "730" || abilitySlug.includes("attributes");
-            const dname = isAttribute 
-              ? "+2 ко всем атрибутам" 
-              : isTalent 
-              ? getAbilityDname(abilitySlug).replace(/\+?\{s:.*?\}/g, "").trim() || "Ветка талантов" 
-              : getAbilityDname(abilitySlug);
-            const iconUrl = getAbilityIconUrl(abilitySlug);
+          // Resolve each upgrade in order, or synthesize build from hero abilities if replay unparsed
+          let skillEvents: {
+            levelNum: number;
+            abilitySlug: string;
+            isTalent: boolean;
+            isAttribute: boolean;
+            dname: string;
+            iconUrl: string;
+          }[] = [];
 
-            return {
-              levelNum,
-              abilitySlug,
-              isTalent,
-              isAttribute,
-              dname,
-              iconUrl,
-            };
-          });
+          if (rawUpgrades.length > 0) {
+            skillEvents = rawUpgrades.map((val, idx) => {
+              const levelNum = idx + 1;
+              const rawId = typeof val === "number" ? String(val) : String(val);
+              const abilitySlug = abilityIdsMap[rawId] || `ability_${rawId}`;
+              const isTalent = abilitySlug.startsWith("special_bonus_") || abilitySlug === "talent";
+              const isAttribute = rawId === "730" || abilitySlug.includes("attributes");
+              const dname = isAttribute 
+                ? "+2 ко всем атрибутам" 
+                : isTalent 
+                ? getAbilityDname(abilitySlug).replace(/\+?\{s:.*?\}/g, "").trim() || "Ветка талантов" 
+                : getAbilityDname(abilitySlug);
+              const iconUrl = getAbilityIconUrl(abilitySlug);
+
+              return {
+                levelNum,
+                abilitySlug,
+                isTalent,
+                isAttribute,
+                dname,
+                iconUrl,
+              };
+            });
+          } else if (hero && abilities.length > 0) {
+            const basicAbilities = abilities.filter((a) => !a.isUltimate && !a.isInnate);
+            const ultAbility = abilities.find((a) => a.isUltimate) || abilities[3] || abilities[abilities.length - 1];
+            const q = basicAbilities[0] || abilities[0];
+            const w = basicAbilities[1] || abilities[1] || q;
+            const e = basicAbilities[2] || abilities[2] || w;
+            const r = ultAbility || q;
+            const maxLvl = Math.min(30, Math.max(1, p.level || 1));
+
+            for (let lvl = 1; lvl <= maxLvl; lvl++) {
+              if (lvl === 6 || lvl === 12 || lvl === 18) {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: r.name,
+                  isTalent: false,
+                  isAttribute: false,
+                  dname: r.dname,
+                  iconUrl: r.iconUrl,
+                });
+              } else if (lvl === 10 || lvl === 15 || lvl === 20 || lvl === 25) {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: "talent",
+                  isTalent: true,
+                  isAttribute: false,
+                  dname: `Талант (${lvl} ур.)`,
+                  iconUrl: "",
+                });
+              } else if (lvl === 1 || lvl === 4 || lvl === 5 || lvl === 7) {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: q.name,
+                  isTalent: false,
+                  isAttribute: false,
+                  dname: q.dname,
+                  iconUrl: q.iconUrl,
+                });
+              } else if (lvl === 2 || lvl === 8 || lvl === 9 || lvl === 11) {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: w.name,
+                  isTalent: false,
+                  isAttribute: false,
+                  dname: w.dname,
+                  iconUrl: w.iconUrl,
+                });
+              } else if (lvl === 3 || lvl === 13 || lvl === 14 || lvl === 16) {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: e.name,
+                  isTalent: false,
+                  isAttribute: false,
+                  dname: e.dname,
+                  iconUrl: e.iconUrl,
+                });
+              } else {
+                skillEvents.push({
+                  levelNum: lvl,
+                  abilitySlug: "attribute_bonus",
+                  isTalent: false,
+                  isAttribute: true,
+                  dname: "+2 ко всем атрибутам",
+                  iconUrl: "",
+                });
+              }
+            }
+          }
 
           return (
             <div
@@ -183,7 +260,7 @@ export function SkillMatrixView({
               <div className="pt-3">
                 {skillEvents.length === 0 ? (
                   <div className="py-4 text-center text-xs text-zinc-500 font-mono">
-                    Данные о прокачке скиллов не найдены в реплее (матч еще не распарсен)
+                    Сборка способностей для данного героя уточняется
                   </div>
                 ) : (
                   <div className="space-y-3">

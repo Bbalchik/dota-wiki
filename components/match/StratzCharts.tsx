@@ -83,12 +83,7 @@ export function StratzCharts({
   const totalRadiantDmg = useMemo(() => radiantPlayers.reduce((a, b) => a + (b.hero_damage ?? 0), 0), [radiantPlayers]);
   const totalDireDmg = useMemo(() => direPlayers.reduce((a, b) => a + (b.hero_damage ?? 0), 0), [direPlayers]);
 
-  // 1. Advantage data
-  const advData = advMode === "gold" ? match.radiant_gold_adv : match.radiant_xp_adv;
-  const maxAdv = Math.max(2000, ...advData.map((v) => Math.abs(v)));
-  const finalAdv = advData.length > 0 ? advData[advData.length - 1] : 0;
-
-  // 2. Net worth progression series for all 10 players
+  // 1. Net worth progression series for all 10 players
   const allNwSeries = useMemo(() => {
     const sorted = [...match.players].sort((a, b) => a.player_slot - b.player_slot);
     return sorted.map((p) => {
@@ -115,6 +110,25 @@ export function StratzCharts({
       };
     });
   }, [match.players, heroMap, maxMinute, selectedSlot]);
+
+  // 2. Advantage data (fallback to computed team advantage if replay unparsed)
+  const advData = useMemo(() => {
+    const raw = advMode === "gold" ? match.radiant_gold_adv : match.radiant_xp_adv;
+    if (raw && raw.length > 0) return raw;
+
+    const radSeries = allNwSeries.filter((s) => s.player.isRadiant);
+    const direSeries = allNwSeries.filter((s) => !s.player.isRadiant);
+    const computed: number[] = [];
+    for (let m = 0; m <= maxMinute; m++) {
+      const radSum = radSeries.reduce((acc, s) => acc + (s.series[m] ?? 0), 0);
+      const direSum = direSeries.reduce((acc, s) => acc + (s.series[m] ?? 0), 0);
+      computed.push(radSum - direSum);
+    }
+    return computed;
+  }, [advMode, match.radiant_gold_adv, match.radiant_xp_adv, allNwSeries, maxMinute]);
+
+  const maxAdv = Math.max(2000, ...advData.map((v) => Math.abs(v)));
+  const finalAdv = advData.length > 0 ? advData[advData.length - 1] : 0;
 
   const maxPlayerNw = useMemo(() => {
     let max = 3000;
