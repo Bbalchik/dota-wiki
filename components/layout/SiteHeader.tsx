@@ -144,29 +144,7 @@ export function SiteHeader({
           </div>
         </Link>
 
-        {/* ── Desktop Navigation Links ── */}
-        <nav className="hidden lg:flex items-center gap-1 bg-zinc-900/80 border border-zinc-800/80 rounded-full p-1 shadow-inner">
-          <Link
-            href="/"
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-              currentPath === "/"
-                ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
-            }`}
-          >
-            Матчи игрока
-          </Link>
-          <Link
-            href="/matches"
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-              currentPath === "/matches"
-                ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
-            }`}
-          >
-            <span>База матчей</span>
-          </Link>
-        </nav>
+
 
         {/* ── Search Bar (Desktop / Tablet) ── */}
         <div className="flex-1 max-w-sm mx-2 hidden md:block">
@@ -340,29 +318,13 @@ export function SiteHeader({
           <div className="w-full">
             <PlayerSearchBar />
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2">
+          <div className="pt-2">
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-200"
+              className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-semibold text-zinc-200"
             >
-              <span>Главная</span>
-            </Link>
-            <Link
-              href="/heroes"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-xs font-semibold text-amber-300"
-            >
-              <Swords className="size-4" />
-              <span>Мета & Билды</span>
-            </Link>
-            <Link
-              href="/matches"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-300 col-span-2 sm:col-span-1"
-            >
-              <span className="size-2 rounded-full bg-green-400 animate-pulse" />
-              <span>Лайв матчи</span>
+              <span>Матчи игрока</span>
             </Link>
           </div>
         </div>
