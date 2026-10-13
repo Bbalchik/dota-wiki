@@ -298,36 +298,42 @@ export function SiteHeader({
                   </button>
                 </div>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  Введите ваш Dota 2 Account ID (например <span className="font-mono text-zinc-200">1068082356</span>). Профиль закрепится как ваш основной и никогда не сбросится.
+                  Укажите ваш Dota 2 Account ID (число из профиля в Dota 2). Сайт закрепит ваш аккаунт и откроет персональную статистику.
                 </p>
 
                 <div className="space-y-2">
                   <input
                     type="text"
-                    placeholder="Account ID (напр. 1068082356)"
+                    placeholder="Ваш Account ID (например 12345678)"
                     value={inputAccountId}
-                    onChange={(e) => setInputAccountId(e.target.value)}
+                    onChange={(e) => setInputAccountId(e.target.value.replace(/\D/g, ""))}
                     className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 font-mono focus:border-zinc-600 focus:outline-none"
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleQuickSwitch(inputAccountId || "1068082356")}
-                      className="flex-1 rounded-xl bg-zinc-100 hover:bg-white py-2.5 text-xs font-semibold text-zinc-900 transition shadow-sm"
+                      onClick={() => {
+                        const cleaned = inputAccountId.trim();
+                        if (cleaned && Number(cleaned) > 0) {
+                          handleQuickSwitch(cleaned);
+                        }
+                      }}
+                      disabled={!inputAccountId.trim()}
+                      className="flex-1 rounded-xl bg-zinc-100 hover:bg-white disabled:opacity-40 disabled:pointer-events-none py-2.5 text-xs font-semibold text-zinc-900 transition shadow-sm cursor-pointer"
                     >
-                      Закрепить мой аккаунт
+                      Открыть мой профиль
                     </button>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-800">
-                  <div className="text-[11px] text-zinc-500 mb-2">Быстрый вход:</div>
-                  <button
-                    onClick={() => handleQuickSwitch(1068082356)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/40 hover:bg-zinc-800/80 border border-zinc-800 text-xs transition"
+                <div className="pt-3 border-t border-zinc-800 text-center">
+                  <span className="text-[11px] text-zinc-500 block mb-2">Или безопасный вход в один клик:</span>
+                  <Link
+                    href="/api/auth/steam"
+                    className="inline-flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium border border-zinc-700/60 transition"
                   >
-                    <span className="font-medium text-zinc-200">Мой аккаунт (#1068082356)</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">Выбрать →</span>
-                  </button>
+                    <span>🎮</span>
+                    <span>Войти через Steam OpenID</span>
+                  </Link>
                 </div>
               </div>
             </div>

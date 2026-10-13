@@ -6,7 +6,10 @@ import { fetchPlayerProfile } from "@/lib/opendota";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const rawAccountId = searchParams.get("accountId") ?? "1068082356";
+    const rawAccountId = searchParams.get("accountId");
+    if (!rawAccountId) {
+      return NextResponse.json({ error: "Missing accountId" }, { status: 400 });
+    }
     const accountId = Number(rawAccountId);
     const redirectPath = searchParams.get("redirect") ?? `/player/${accountId}`;
 

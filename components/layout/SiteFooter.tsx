@@ -47,18 +47,19 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Col 3: Popular Pro Players */}
+          {/* Col 3: Features */}
           <div className="space-y-2">
-            <div className="text-xs font-bold text-white uppercase tracking-wider">Профили киберспортсменов</div>
+            <div className="text-xs font-bold text-white uppercase tracking-wider">Инструменты</div>
             <ul className="space-y-1.5 text-xs">
-              {TOP_PRO_PLAYERS.slice(0, 5).map((p) => (
-                <li key={p.accountId}>
-                  <Link href={`/player/${p.accountId}`} className="hover:text-blue-400 transition flex items-center justify-between">
-                    <span>{p.name}</span>
-                    <span className="text-[10px] text-zinc-500 font-mono">{p.teamTag}</span>
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link href="/api/auth/steam" className="hover:text-white transition">Вход через Steam</Link>
+              </li>
+              <li>
+                <Link href="/heroes" className="hover:text-white transition">Мета и тир-лист героев</Link>
+              </li>
+              <li>
+                <Link href="/matches" className="hover:text-white transition">База всех матчей</Link>
+              </li>
             </ul>
           </div>
 
