@@ -6,6 +6,8 @@
  * 3. Steam Web API (if STEAM_API_KEY is configured in .env)
  */
 
+import { getStratzToken } from "@/lib/stratz";
+
 export interface DataSourceStatus {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ export interface DataSourceStatus {
 }
 
 export function getDataSourcesStatus(): DataSourceStatus[] {
-  const hasStratz = Boolean(process.env.STRATZ_API_KEY);
+  const hasStratz = Boolean(getStratzToken());
   const hasSteam = Boolean(process.env.STEAM_API_KEY);
 
   return [
@@ -93,7 +95,7 @@ export async function fetchStratzPlayerSummary(accountId: number): Promise<{
   behaviorScore?: number;
   rank?: number;
 } | null> {
-  const token = process.env.STRATZ_API_KEY;
+  const token = getStratzToken();
   if (!token) return null;
 
   try {

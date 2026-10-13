@@ -66,14 +66,27 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // 5. Create session cookie token and attach to 302 redirect response
+  // 5. Register player in autonomous crawler so their new matches are tracked continuously
+  try {
+    const { trackPlayerId, startDotaAutoUpdater } = await import('@/lib/dota-auto-updater');
+    trackPlayerId(accountId);
+    startDotaAutoUpdater();
+  } catch {}
+
+  // 6. Create session cookie token and attach to 302 redirect response
   const token = await createSessionToken({ steamId: steamId64, profileId: profile.id });
   const expiresAt = new Date(Date.now() + EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 
-  const response = NextResponse.redirect(new URL('/', request.url));
+  const response = NextResponse.redirect(new URL(`/player/${accountId}`, request.url));
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: isSecureCookie(),
+    expires: expiresAt,
+    maxAge: EXPIRY_DAYS * 24 * 60 * 60,
+    sameSite: 'lax',
+    path: '/',
+  });
+  response.cookies.set('active_account_id', String(accountId), {
     expires: expiresAt,
     maxAge: EXPIRY_DAYS * 24 * 60 * 60,
     sameSite: 'lax',
