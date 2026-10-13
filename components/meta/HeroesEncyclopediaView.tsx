@@ -34,14 +34,46 @@ interface HeroesEncyclopediaViewProps {
   heroes: OpenDotaHeroStat[];
 }
 
-type BracketMode = "high" | "all" | "pro";
+type BracketMode = "all" | "low" | "mid" | "high" | "immortal" | "pro";
 type TierLevel = "S" | "A" | "B" | "C" | "D";
+
+const BRACKETS_LIST: { id: BracketMode; label: string; icon: string; title: string }[] = [
+  { id: "all", label: "Все ранги", icon: "🌐", title: "Все ранги паблика (миллионы матчей)" },
+  { id: "low", label: "Рекрут–Рыцарь", icon: "🥉", title: "Ранги 1–3 (Herald, Guardian, Crusader)" },
+  { id: "mid", label: "Герой–Легенда", icon: "🥈", title: "Ранги 4–5 (Archon, Legend)" },
+  { id: "high", label: "Властелин–Божество", icon: "🥇", title: "Ранги 6–7 (Ancient, Divine)" },
+  { id: "immortal", label: "Титан", icon: "👑", title: "Ранг 8 (Immortal 7000+ MMR)" },
+  { id: "pro", label: "Про-сцена", icon: "🏆", title: "Турниры и матчи D2PT" },
+];
+
+function getBracketLabel(b: BracketMode): string {
+  switch (b) {
+    case "all":
+      return "Все ранги паблика";
+    case "low":
+      return "Рекрут – Рыцарь";
+    case "mid":
+      return "Герой – Легенда";
+    case "high":
+      return "Властелин – Божество";
+    case "immortal":
+      return "Титан (7000+ MMR)";
+    case "pro":
+      return "Про-сцена (D2PT)";
+  }
+}
 
 interface ProcessedHero extends OpenDotaHeroStat {
   totalPicks: number;
   winrate: number;
+  lowPicks: number;
+  lowWinrate: number;
+  midPicks: number;
+  midWinrate: number;
   highWinrate: number;
   highPicks: number;
+  immortalPicks: number;
+  immortalWinrate: number;
   proPicks: number;
   proWins: number;
   proWinrate: number;
@@ -140,7 +172,7 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState<number>(0);
   const [attrFilter, setAttrFilter] = useState<string>("all");
-  const [bracket, setBracket] = useState<BracketMode>("high");
+  const [bracket, setBracket] = useState<BracketMode>("all");
   const [viewMode, setViewMode] = useState<"tiers" | "grid" | "table">("tiers");
   const [sortBy, setSortBy] = useState<"winrate" | "picks" | "bans" | "name">("winrate");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -148,14 +180,20 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
   const [heroBuildData, setHeroBuildData] = useState<any>(null);
   const [loadingBuild, setLoadingBuild] = useState(false);
   const [modalTab, setModalTab] = useState<"guides" | "popular" | "abilities">("guides");
+  const [matchTypeFilter, setMatchTypeFilter] = useState<"all" | "ranked" | "pro" | "turbo">("all");
+  const [itemBuildSource, setItemBuildSource] = useState<"pub" | "pro">("pub");
 
   useEffect(() => {
     if (!selectedHero) {
       setHeroBuildData(null);
       setModalTab("guides");
+      setMatchTypeFilter("all");
+      setItemBuildSource("pub");
       return;
     }
     setModalTab("guides");
+    setMatchTypeFilter("all");
+    setItemBuildSource("pub");
     setLoadingBuild(true);
     fetch(`/api/heroes/${selectedHero.id}/build`)
       .then((res) => (res.ok ? res.json() : null))
@@ -180,7 +218,7 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
 
   const processed: ProcessedHero[] = useMemo(() => {
     return heroes.map((h) => {
-      // Standard Ranked & All Pick picks (Brackets 1-8: Herald to Immortal)
+      // 1. All pub ranks (1-8: Herald to Immortal)
       const pubPicks =
         (h["1_pick"] || 0) +
         (h["2_pick"] || 0) +
@@ -203,27 +241,55 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
 
       const pubWinrate = pubPicks > 0 ? (pubWins / pubPicks) * 100 : 50;
 
-      // Divine / Immortal (brackets 7 + 8)
-      const highPicks = (h["7_pick"] || 0) + (h["8_pick"] || 0);
-      const highWins = (h["7_win"] || 0) + (h["8_win"] || 0);
+      // 2. Low rank: Рекрут - Рыцарь (Herald, Guardian, Crusader: 1, 2, 3)
+      const lowPicks = (h["1_pick"] || 0) + (h["2_pick"] || 0) + (h["3_pick"] || 0);
+      const lowWins = (h["1_win"] || 0) + (h["2_win"] || 0) + (h["3_win"] || 0);
+      const lowWinrate = lowPicks > 0 ? (lowWins / lowPicks) * 100 : pubWinrate;
+
+      // 3. Mid rank: Герой - Легенда (Archon, Legend: 4, 5)
+      const midPicks = (h["4_pick"] || 0) + (h["5_pick"] || 0);
+      const midWins = (h["4_win"] || 0) + (h["5_win"] || 0);
+      const midWinrate = midPicks > 0 ? (midWins / midPicks) * 100 : pubWinrate;
+
+      // 4. High rank: Властелин - Божество (Ancient, Divine: 6, 7)
+      const highPicks = (h["6_pick"] || 0) + (h["7_pick"] || 0);
+      const highWins = (h["6_win"] || 0) + (h["7_win"] || 0);
       const highWinrate = highPicks > 0 ? (highWins / highPicks) * 100 : pubWinrate;
 
-      // Pro Tournaments
+      // 5. Immortal rank: Титан (8)
+      const immortalPicks = h["8_pick"] || 0;
+      const immortalWins = h["8_win"] || 0;
+      const immortalWinrate = immortalPicks > 0 ? (immortalWins / immortalPicks) * 100 : highWinrate;
+
+      // 6. Pro Tournaments
       const proPicks = h.pro_pick || 0;
       const proWins = h.pro_win || 0;
-      const proWinrate = proPicks > 0 ? (proWins / proPicks) * 100 : highWinrate;
+      const proWinrate = proPicks > 0 ? (proWins / proPicks) * 100 : immortalWinrate;
       const proBans = h.pro_ban || 0;
 
       // Active stats depending on selected bracket
-      let activeWinrate = highWinrate;
-      let activePicks = highPicks;
+      let activeWinrate = pubWinrate;
+      let activePicks = pubPicks;
 
-      if (bracket === "all") {
-        activeWinrate = pubWinrate;
-        activePicks = pubPicks;
+      if (bracket === "low") {
+        activeWinrate = lowWinrate;
+        activePicks = lowPicks;
+      } else if (bracket === "mid") {
+        activeWinrate = midWinrate;
+        activePicks = midPicks;
+      } else if (bracket === "high") {
+        activeWinrate = highWinrate;
+        activePicks = highPicks;
+      } else if (bracket === "immortal") {
+        activeWinrate = immortalWinrate;
+        activePicks = immortalPicks;
       } else if (bracket === "pro") {
         activeWinrate = proWinrate;
         activePicks = proPicks;
+      } else {
+        // "all"
+        activeWinrate = pubWinrate;
+        activePicks = pubPicks;
       }
 
       // Assign Tier based on active winrate
@@ -246,8 +312,14 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
         ...h,
         totalPicks: pubPicks,
         winrate: Number(pubWinrate.toFixed(1)),
+        lowPicks,
+        lowWinrate: Number(lowWinrate.toFixed(1)),
+        midPicks,
+        midWinrate: Number(midWinrate.toFixed(1)),
         highWinrate: Number(highWinrate.toFixed(1)),
         highPicks,
+        immortalPicks,
+        immortalWinrate: Number(immortalWinrate.toFixed(1)),
         proPicks,
         proWins,
         proWinrate: Number(proWinrate.toFixed(1)),
@@ -391,47 +463,27 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
               </p>
             </div>
 
-            {/* Bracket Mode Selector (High Rank vs All vs Pro) */}
+            {/* Bracket Mode Selector (All public brackets + Pro) */}
             <div className="flex flex-col gap-1.5 shrink-0 bg-zinc-900/80 border border-zinc-800/80 p-2 rounded-2xl">
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-semibold px-2">
-                Категория рейтинга:
+                Рейтинговый брекет:
               </span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setBracket("high")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                    bracket === "high"
-                      ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                      : "text-zinc-400 hover:text-zinc-200"
-                  }`}
-                >
-                  <Shield className="size-3.5 text-zinc-400" />
-                  <span>Immortal (7k+ MMR)</span>
-                </button>
-
-                <button
-                  onClick={() => setBracket("all")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                    bracket === "all"
-                      ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                      : "text-zinc-400 hover:text-zinc-200"
-                  }`}
-                >
-                  <Swords className="size-3.5 text-zinc-400" />
-                  <span>Все ранги</span>
-                </button>
-
-                <button
-                  onClick={() => setBracket("pro")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                    bracket === "pro"
-                      ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
-                      : "text-zinc-400 hover:text-zinc-200"
-                  }`}
-                >
-                  <Award className="size-3.5 text-zinc-400" />
-                  <span>Про-сцена</span>
-                </button>
+              <div className="flex flex-wrap items-center gap-1">
+                {BRACKETS_LIST.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => setBracket(b.id)}
+                    title={b.title}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                      bracket === b.id
+                        ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                  >
+                    <span>{b.icon}</span>
+                    <span>{b.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -474,13 +526,13 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
                     </span>
                   </h2>
                   <p className="text-xs text-zinc-400">
-                    Герои с максимальным винрейтом на этой позиции в Immortal / Divine ранге
+                    Герои с максимальным винрейтом на этой позиции в категории: {getBracketLabel(bracket)}
                   </p>
                 </div>
               </div>
 
               <div className="text-[11px] font-mono text-zinc-400">
-                Ранг: <span className="text-zinc-200 font-bold">{bracket === "high" ? "Immortal (7k+)" : bracket === "all" ? "Все ранги" : "Про-сцена"}</span>
+                Ранг: <span className="text-zinc-200 font-bold">{getBracketLabel(bracket)}</span>
               </div>
             </div>
 
@@ -712,7 +764,7 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
                     </div>
 
                     <div className="text-[11px] font-mono text-zinc-400">
-                      Ранг: <strong className="text-zinc-200">{bracket === "high" ? "Immortal (7k+)" : bracket === "all" ? "Все паблики" : "Про-турниры"}</strong>
+                      Ранг: <strong className="text-zinc-200">{getBracketLabel(bracket)}</strong>
                     </div>
                   </div>
 
@@ -1059,324 +1111,432 @@ export function HeroesEncyclopediaView({ heroes }: HeroesEncyclopediaViewProps) 
               </div>
 
               {/* ── TAB 1: Real Player Match Guides (Dotabuff style) ── */}
-              {modalTab === "guides" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-zinc-300 font-mono">
-                      Матчи игроков (Патч {CURRENT_DOTA_PATCH})
-                    </span>
-                  </div>
+              {modalTab === "guides" && (() => {
+                const allMatches: any[] = heroBuildData?.realPlayerMatches || [];
+                const filteredMatches = allMatches.filter((m) => {
+                  if (matchTypeFilter === "ranked") return m.match_type === "ranked";
+                  if (matchTypeFilter === "pro") return m.match_type === "pro";
+                  if (matchTypeFilter === "turbo") return m.match_type === "turbo";
+                  return true;
+                });
 
-                  {loadingBuild ? (
-                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-zinc-500 font-mono bg-black/20 rounded-2xl border border-white/[0.06]">
-                      <div className="size-5 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
-                      <span>Загрузка...</span>
-                    </div>
-                  ) : heroBuildData?.realPlayerMatches && heroBuildData.realPlayerMatches.length > 0 ? (
-                    <div className="space-y-4">
-                      {heroBuildData.realPlayerMatches.map((m: any, idx: number) => {
-                        const isWin = m.won;
-                        const durationMins = Math.floor(m.duration / 60);
-                        const durationSecs = (m.duration % 60).toString().padStart(2, "0");
+                return (
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-zinc-800/80">
+                      <div>
+                        <span className="text-xs font-bold text-zinc-300 font-mono block">
+                          Матчи игроков (Патч {CURRENT_DOTA_PATCH})
+                        </span>
+                        <span className="text-[11px] text-zinc-500 font-mono">
+                          Показано {filteredMatches.length} из {allMatches.length} матчей
+                        </span>
+                      </div>
 
-                        return (
-                          <div
-                            key={m.match_id || idx}
-                            className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 hover:bg-zinc-950/80 hover:border-zinc-700/60 p-4 sm:p-5 transition space-y-4 shadow-sm"
+                      {/* Filter Pills */}
+                      <div className="flex flex-wrap items-center gap-1 bg-zinc-900/90 border border-zinc-800/80 p-1 rounded-xl text-xs">
+                        {[
+                          { id: "all" as const, label: "Все", count: allMatches.length },
+                          { id: "ranked" as const, label: "🛡️ Рейтинг", count: allMatches.filter((m) => m.match_type === "ranked").length },
+                          { id: "pro" as const, label: "🏆 Про-сцена", count: allMatches.filter((m) => m.match_type === "pro").length },
+                          { id: "turbo" as const, label: "⚡ Турбо", count: allMatches.filter((m) => m.match_type === "turbo").length },
+                        ].map((f) => (
+                          <button
+                            key={f.id}
+                            onClick={() => setMatchTypeFilter(f.id)}
+                            className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1 ${
+                              matchTypeFilter === f.id
+                                ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
+                                : "text-zinc-400 hover:text-zinc-200"
+                            }`}
                           >
-                            {/* 1. Match Card Header */}
-                            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-800/80">
-                              <div className="flex items-center gap-3">
-                                <div className="relative size-10 rounded-xl overflow-hidden border border-zinc-700/60 bg-zinc-900 shrink-0">
-                                  {m.avatar ? (
-                                    <img src={m.avatar} alt="" className="size-full object-cover" />
-                                  ) : (
-                                    <div className="size-full flex items-center justify-center font-bold text-xs text-zinc-400 bg-zinc-800">
-                                      {m.player_name ? m.player_name.slice(0, 2).toUpperCase() : "??"}
-                                    </div>
-                                  )}
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-bold text-zinc-100 text-sm hover:text-white transition truncate max-w-[180px] sm:max-w-[260px]">
-                                      {m.player_name}
-                                    </span>
-                                    {m.pos && (
-                                      <span
-                                        className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700/60"
-                                        title={m.pos_full}
-                                      >
-                                        Поз {m.pos} · {m.pos_name}
+                            <span>{f.label}</span>
+                            {f.count > 0 && (
+                              <span className="text-[10px] font-mono text-zinc-500">({f.count})</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {loadingBuild ? (
+                      <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-zinc-500 font-mono bg-black/20 rounded-2xl border border-white/[0.06]">
+                        <div className="size-5 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+                        <span>Загрузка...</span>
+                      </div>
+                    ) : filteredMatches.length > 0 ? (
+                      <div className="space-y-4">
+                        {filteredMatches.map((m: any, idx: number) => {
+                          const isWin = m.won;
+                          const durationMins = Math.floor(m.duration / 60);
+                          const durationSecs = (m.duration % 60).toString().padStart(2, "0");
+
+                          return (
+                            <div
+                              key={m.match_id || idx}
+                              className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 hover:bg-zinc-950/80 hover:border-zinc-700/60 p-4 sm:p-5 transition space-y-4 shadow-sm"
+                            >
+                              {/* 1. Match Card Header */}
+                              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-800/80">
+                                <div className="flex items-center gap-3">
+                                  <div className="relative size-10 rounded-xl overflow-hidden border border-zinc-700/60 bg-zinc-900 shrink-0">
+                                    {m.avatar ? (
+                                      <img src={m.avatar} alt="" className="size-full object-cover" />
+                                    ) : (
+                                      <div className="size-full flex items-center justify-center font-bold text-xs text-zinc-400 bg-zinc-800">
+                                        {m.player_name ? m.player_name.slice(0, 2).toUpperCase() : "??"}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-bold text-zinc-100 text-sm hover:text-white transition truncate max-w-[180px] sm:max-w-[260px]">
+                                        {m.player_name}
                                       </span>
-                                    )}
-                                    <span
-                                      className={`px-2 py-0.5 rounded text-[10px] font-black font-mono border ${
-                                        isWin
-                                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                          : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                      }`}
-                                    >
-                                      {isWin ? "Победа" : "Поражение"}
-                                    </span>
-                                  </div>
-                                  <div className="text-[11px] text-zinc-400 font-mono flex items-center gap-2 mt-0.5">
-                                    <span>Длительность: {durationMins}:{durationSecs}</span>
-                                    {m.match_id && (
-                                      <>
-                                        <span>•</span>
-                                        <Link
-                                          href={`/matches/${m.match_id}`}
-                                          target="_blank"
-                                          className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+                                      {m.match_type_label && (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+                                          {m.match_type_label}
+                                        </span>
+                                      )}
+                                      {m.pos && (
+                                        <span
+                                          className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-800 text-zinc-300 border border-zinc-700/60"
+                                          title={m.pos_full}
                                         >
-                                          <span>Матч #{m.match_id}</span>
-                                          <ExternalLink className="size-2.5" />
-                                        </Link>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* KDA & Economy */}
-                              <div className="flex items-center gap-3 sm:gap-4 font-mono">
-                                <div className="text-right">
-                                  <div className="text-xs sm:text-sm font-black text-zinc-100">
-                                    <span className="text-emerald-400">{m.kills}</span>
-                                    <span className="text-zinc-500"> / </span>
-                                    <span className="text-rose-400">{m.deaths}</span>
-                                    <span className="text-zinc-500"> / </span>
-                                    <span className="text-zinc-300">{m.assists}</span>
-                                  </div>
-                                  <div className="text-[10px] text-zinc-400">
-                                    KDA <span className="font-bold text-zinc-200">{m.kda}</span>
-                                  </div>
-                                </div>
-
-                                <div className="text-right pl-3 border-l border-zinc-800 hidden sm:block">
-                                  <div className="text-xs sm:text-sm font-black text-zinc-200">
-                                    {m.net_worth ? `${(m.net_worth / 1000).toFixed(1)}k` : "—"}
-                                  </div>
-                                  <div className="text-[10px] text-zinc-400">
-                                    {m.gpm ? `${m.gpm} GPM` : "Net Worth"}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* 2. Items: Starting and Final Inventory */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                              {/* Starting Items */}
-                              {m.starting_items?.length > 0 && (
-                                <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800/80 space-y-1.5">
-                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                                    🛒 Стартовый закуп:
-                                  </span>
-                                  <div className="flex flex-wrap items-center gap-1.5">
-                                    {m.starting_items.map((it: any, i: number) => (
-                                      <div
-                                        key={i}
-                                        className="group relative size-8 rounded-lg overflow-hidden border border-zinc-700/60 bg-zinc-950 hover:border-zinc-500 transition shadow-sm"
-                                        title={it.localizedName}
-                                      >
-                                        <img src={it.icon} alt="" className="size-full object-cover" />
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Final Items */}
-                              {m.final_items?.length > 0 && (
-                                <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800/80 space-y-1.5">
-                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                                    🎒 Финальный инвентарь:
-                                  </span>
-                                  <div className="flex flex-wrap items-center gap-1.5">
-                                    {m.final_items.map((it: any, i: number) => (
-                                      <div
-                                        key={i}
-                                        className="group relative size-8 rounded-lg overflow-hidden border border-zinc-700/60 bg-zinc-950 hover:border-zinc-500 transition shadow-sm"
-                                        title={it.localizedName}
-                                      >
-                                        <img src={it.icon} alt="" className="size-full object-cover" />
-                                      </div>
-                                    ))}
-                                    {m.neutral_item && (
-                                      <div
-                                        className="group relative size-8 rounded-full overflow-hidden border border-zinc-600 bg-zinc-950 hover:border-zinc-400 transition shadow-sm ml-1"
-                                        title={`Нейтральный предмет: ${m.neutral_item.localizedName}`}
-                                      >
-                                        <img src={m.neutral_item.icon} alt="" className="size-full object-cover" />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* 3. Item Progression Timeline */}
-                            {m.timeline_items?.length > 0 && (
-                              <div className="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 space-y-2">
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                                  Тайминги предметов:
-                                </span>
-                                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
-                                  {m.timeline_items.map((it: any, i: number) => (
-                                    <div key={i} className="flex items-center gap-1.5 shrink-0">
-                                      <div
-                                        className="group relative flex flex-col items-center rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-1.5 transition"
-                                        title={`${it.localizedName} (${it.time})`}
-                                      >
-                                        <div className="size-8 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
-                                          <img src={it.icon} alt="" className="size-full object-cover" />
-                                        </div>
-                                        <span className="mt-1 px-1.5 py-0.2 rounded bg-zinc-800 border border-zinc-700/60 text-[9px] font-mono font-bold text-zinc-300">
-                                          {it.time}
+                                          Поз {m.pos} · {m.pos_name}
                                         </span>
-                                        <span className="text-[9px] text-zinc-400 truncate max-w-[64px] text-center mt-0.5">
-                                          {it.localizedName}
-                                        </span>
-                                      </div>
-                                      {i < m.timeline_items.length - 1 && (
-                                        <span className="text-zinc-600 text-xs font-bold shrink-0">→</span>
+                                      )}
+                                      <span
+                                        className={`px-2 py-0.5 rounded text-[10px] font-black font-mono border ${
+                                          isWin
+                                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                            : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                        }`}
+                                      >
+                                        {isWin ? "Победа" : "Поражение"}
+                                      </span>
+                                    </div>
+                                    <div className="text-[11px] text-zinc-400 font-mono flex items-center gap-2 mt-0.5">
+                                      <span>Длительность: {durationMins}:{durationSecs}</span>
+                                      {m.match_id && (
+                                        <>
+                                          <span>•</span>
+                                          <Link
+                                            href={`/matches/${m.match_id}`}
+                                            target="_blank"
+                                            className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition"
+                                          >
+                                            <span>Матч #{m.match_id}</span>
+                                            <ExternalLink className="size-2.5" />
+                                          </Link>
+                                        </>
                                       )}
                                     </div>
-                                  ))}
+                                  </div>
+                                </div>
+
+                                {/* KDA & Economy */}
+                                <div className="flex items-center gap-3 sm:gap-4 font-mono">
+                                  <div className="text-right">
+                                    <div className="text-xs sm:text-sm font-black text-zinc-100">
+                                      <span className="text-emerald-400">{m.kills}</span>
+                                      <span className="text-zinc-500"> / </span>
+                                      <span className="text-rose-400">{m.deaths}</span>
+                                      <span className="text-zinc-500"> / </span>
+                                      <span className="text-zinc-300">{m.assists}</span>
+                                    </div>
+                                    <div className="text-[10px] text-zinc-400">
+                                      KDA <span className="font-bold text-zinc-200">{m.kda}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right pl-3 border-l border-zinc-800 hidden sm:block">
+                                    <div className="text-xs sm:text-sm font-black text-zinc-200">
+                                      {m.net_worth ? `${(m.net_worth / 1000).toFixed(1)}k` : "—"}
+                                    </div>
+                                    <div className="text-[10px] text-zinc-400">
+                                      {m.gpm ? `${m.gpm} GPM` : "Net Worth"}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            )}
 
-                            {/* 4. Skill Upgrade Progression Matrix (Dotabuff style) */}
-                            {m.skill_build?.length > 0 && (
-                              <DotabuffSkillMatrix skillBuild={m.skill_build} />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="py-8 text-center text-xs text-zinc-500 font-mono">
-                      Матчи пока не загружены
-                    </div>
-                  )}
-                </div>
-              )}
+                              {/* 2. Items: Starting and Final Inventory */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                                {/* Starting Items */}
+                                {m.starting_items?.length > 0 && (
+                                  <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800/80 space-y-1.5">
+                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+                                      🛒 Стартовый закуп:
+                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      {m.starting_items.map((it: any, i: number) => (
+                                        <div
+                                          key={i}
+                                          className="group relative size-8 rounded-lg overflow-hidden border border-zinc-700/60 bg-zinc-950 hover:border-zinc-500 transition shadow-sm"
+                                          title={it.localizedName}
+                                        >
+                                          <img src={it.icon} alt="" className="size-full object-cover" />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
 
-              {/* ── TAB 2: Popular Items (Aggregate Meta) ── */}
-              {modalTab === "popular" && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-black text-white">
-                    <Sparkles className="size-4 text-amber-400" />
-                    <span>Популярные предметы по стадиям игры</span>
+                                {/* Final Items */}
+                                {m.final_items?.length > 0 && (
+                                  <div className="bg-zinc-900/80 p-2.5 rounded-xl border border-zinc-800/80 space-y-1.5">
+                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+                                      🎒 Финальный инвентарь:
+                                    </span>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      {m.final_items.map((it: any, i: number) => (
+                                        <div
+                                          key={i}
+                                          className="group relative size-8 rounded-lg overflow-hidden border border-zinc-700/60 bg-zinc-950 hover:border-zinc-500 transition shadow-sm"
+                                          title={it.localizedName}
+                                        >
+                                          <img src={it.icon} alt="" className="size-full object-cover" />
+                                        </div>
+                                      ))}
+                                      {m.neutral_item && (
+                                        <div
+                                          className="group relative size-8 rounded-full overflow-hidden border border-zinc-600 bg-zinc-950 hover:border-zinc-400 transition shadow-sm ml-1"
+                                          title={`Нейтральный предмет: ${m.neutral_item.localizedName}`}
+                                        >
+                                          <img src={m.neutral_item.icon} alt="" className="size-full object-cover" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* 3. Item Progression Timeline */}
+                              {m.timeline_items?.length > 0 && (
+                                <div className="bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 space-y-2">
+                                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+                                    Тайминги предметов:
+                                  </span>
+                                  <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
+                                    {m.timeline_items.map((it: any, i: number) => (
+                                      <div key={i} className="flex items-center gap-1.5 shrink-0">
+                                        <div
+                                          className="group relative flex flex-col items-center rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 p-1.5 transition"
+                                          title={`${it.localizedName} (${it.time})`}
+                                        >
+                                          <div className="size-8 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
+                                            <img src={it.icon} alt="" className="size-full object-cover" />
+                                          </div>
+                                          <span className="mt-1 px-1.5 py-0.2 rounded bg-zinc-800 border border-zinc-700/60 text-[9px] font-mono font-bold text-zinc-300">
+                                            {it.time}
+                                          </span>
+                                          <span className="text-[9px] text-zinc-400 truncate max-w-[64px] text-center mt-0.5">
+                                            {it.localizedName}
+                                          </span>
+                                        </div>
+                                        {i < m.timeline_items.length - 1 && (
+                                          <span className="text-zinc-600 text-xs font-bold shrink-0">→</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* 4. Skill Upgrade Progression Matrix (Dotabuff style) */}
+                              {m.skill_build?.length > 0 && (
+                                <DotabuffSkillMatrix skillBuild={m.skill_build} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="py-8 text-center text-xs text-zinc-500 font-mono">
+                        Матчи выбранной категории не найдены
+                      </div>
+                    )}
                   </div>
+                );
+              })()}
 
-                  {loadingBuild ? (
-                    <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400">
-                      <div className="size-5 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
-                      <span>Загрузка популярных предметов...</span>
+              {/* ── TAB 2: Popular Items (Dual Builds: Pub vs Pro) ── */}
+              {modalTab === "popular" && (() => {
+                const activeBuild =
+                  (itemBuildSource === "pub"
+                    ? heroBuildData?.pubItemBuild
+                    : heroBuildData?.proItemBuild) ||
+                  heroBuildData?.itemBuild ||
+                  heroBuildData?.pubItemBuild ||
+                  heroBuildData?.proItemBuild;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-zinc-800/80">
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-black text-white">
+                          <Sparkles className="size-4 text-amber-400" />
+                          <span>Сборки и популярные предметы</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          {itemBuildSource === "pub"
+                            ? "📊 Реальные пики из миллионов рейтинговых игр паблика (OpenDota / Stratz)"
+                            : "🏆 Сборки про-игроков и турнирных матчей (D2PT / Pro Circuit)"}
+                        </p>
+                      </div>
+
+                      {/* Source Toggle: Pub vs Pro */}
+                      <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-xl text-xs shrink-0">
+                        <button
+                          onClick={() => setItemBuildSource("pub")}
+                          className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                            itemBuildSource === "pub"
+                              ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
+                              : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          <span>🌐 Паблик & Рейтинг</span>
+                        </button>
+                        <button
+                          onClick={() => setItemBuildSource("pro")}
+                          className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+                            itemBuildSource === "pro"
+                              ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm"
+                              : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          <span>🏆 Про-арена & D2PT</span>
+                        </button>
+                      </div>
                     </div>
-                  ) : heroBuildData?.itemBuild ? (
-                    <div className="space-y-3.5 bg-black/30 p-4 rounded-2xl border border-white/[0.06]">
-                      {/* 1. Start Items */}
-                      {heroBuildData.itemBuild.start?.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                            🛒 Стартовый закуп:
-                          </span>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {heroBuildData.itemBuild.start.map((it: any) => (
-                              <div
-                                key={it.id}
-                                className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-blue-400/40 transition"
-                                title={it.localizedName}
-                              >
-                                <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
-                                <span className="text-xs font-semibold text-zinc-200 pr-1 truncate max-w-[100px]">
-                                  {it.localizedName}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
 
-                      {/* 2. Early Game */}
-                      {heroBuildData.itemBuild.early?.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
-                            ⏱️ Ранняя игра (ботинки, улучшения):
-                          </span>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {heroBuildData.itemBuild.early.map((it: any) => (
-                              <div
-                                key={it.id}
-                                className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-blue-400/40 transition"
-                                title={it.localizedName}
-                              >
-                                <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
-                                <span className="text-xs font-semibold text-zinc-200 pr-1 truncate max-w-[100px]">
-                                  {it.localizedName}
-                                </span>
-                              </div>
-                            ))}
+                    {loadingBuild ? (
+                      <div className="py-8 flex flex-col items-center justify-center gap-2 text-xs text-zinc-400">
+                        <div className="size-5 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+                        <span>Загрузка предметов...</span>
+                      </div>
+                    ) : activeBuild ? (
+                      <div className="space-y-3.5 bg-black/30 p-4 rounded-2xl border border-white/[0.06]">
+                        {/* 1. Start Items */}
+                        {activeBuild.start?.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+                              🛒 Стартовый закуп:
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {activeBuild.start.map((it: any) => (
+                                <div
+                                  key={it.id}
+                                  className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-blue-400/40 transition"
+                                  title={it.localizedName}
+                                >
+                                  <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
+                                  <span className="text-xs font-semibold text-zinc-200 pr-1 truncate max-w-[100px]">
+                                    {it.localizedName}
+                                  </span>
+                                  {it.count > 0 && itemBuildSource === "pub" && (
+                                    <span className="text-[10px] font-mono text-zinc-500">
+                                      {it.count > 1000 ? `${(it.count / 1000).toFixed(0)}k` : it.count}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* 3. Core Items */}
-                      {heroBuildData.itemBuild.mid?.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider font-mono">
-                            ⚔️ Основные ключевые предметы (Core):
-                          </span>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {heroBuildData.itemBuild.mid.map((it: any) => (
-                              <div
-                                key={it.id}
-                                className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:border-amber-400/50 transition"
-                                title={it.localizedName}
-                              >
-                                <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
-                                <span className="text-xs font-bold text-amber-200 pr-1 truncate max-w-[110px]">
-                                  {it.localizedName}
-                                </span>
-                              </div>
-                            ))}
+                        {/* 2. Early Game */}
+                        {activeBuild.early?.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+                              ⏱️ Ранняя игра (ботинки, улучшения):
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {activeBuild.early.map((it: any) => (
+                                <div
+                                  key={it.id}
+                                  className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-blue-400/40 transition"
+                                  title={it.localizedName}
+                                >
+                                  <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
+                                  <span className="text-xs font-semibold text-zinc-200 pr-1 truncate max-w-[100px]">
+                                    {it.localizedName}
+                                  </span>
+                                  {it.count > 0 && itemBuildSource === "pub" && (
+                                    <span className="text-[10px] font-mono text-zinc-500">
+                                      {it.count > 1000 ? `${(it.count / 1000).toFixed(0)}k` : it.count}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* 4. Late Game */}
-                      {heroBuildData.itemBuild.late?.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider font-mono">
-                            👑 Поздняя игра / По ситуации:
-                          </span>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {heroBuildData.itemBuild.late.map((it: any) => (
-                              <div
-                                key={it.id}
-                                className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:border-purple-400/50 transition"
-                                title={it.localizedName}
-                              >
-                                <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
-                                <span className="text-xs font-semibold text-purple-200 pr-1 truncate max-w-[110px]">
-                                  {it.localizedName}
-                                </span>
-                              </div>
-                            ))}
+                        {/* 3. Core Items */}
+                        {activeBuild.mid?.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider font-mono">
+                              ⚔️ Основные ключевые предметы (Core):
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {activeBuild.mid.map((it: any) => (
+                                <div
+                                  key={it.id}
+                                  className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:border-amber-400/50 transition"
+                                  title={it.localizedName}
+                                >
+                                  <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
+                                  <span className="text-xs font-bold text-amber-200 pr-1 truncate max-w-[110px]">
+                                    {it.localizedName}
+                                  </span>
+                                  {it.count > 0 && itemBuildSource === "pub" && (
+                                    <span className="text-[10px] font-mono text-amber-300/80">
+                                      {it.count > 1000 ? `${(it.count / 1000).toFixed(0)}k` : it.count}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-zinc-500 py-3 text-center">
-                      Данные по популярным предметам загружаются...
-                    </div>
-                  )}
-                </div>
-              )}
+                        )}
+
+                        {/* 4. Late Game */}
+                        {activeBuild.late?.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider font-mono">
+                              👑 Поздняя игра / По ситуации:
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {activeBuild.late.map((it: any) => (
+                                <div
+                                  key={it.id}
+                                  className="group relative flex items-center gap-2 p-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:border-purple-400/50 transition"
+                                  title={it.localizedName}
+                                >
+                                  <img src={it.icon} alt="" className="size-7 rounded-lg object-cover bg-black" />
+                                  <span className="text-xs font-semibold text-purple-200 pr-1 truncate max-w-[110px]">
+                                    {it.localizedName}
+                                  </span>
+                                  {it.count > 0 && itemBuildSource === "pub" && (
+                                    <span className="text-[10px] font-mono text-purple-300/80">
+                                      {it.count > 1000 ? `${(it.count / 1000).toFixed(0)}k` : it.count}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-zinc-500 py-3 text-center">
+                        Данные по предметам загружаются...
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* ── TAB 3: Hero Abilities & Talents ── */}
               {modalTab === "abilities" && (

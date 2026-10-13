@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Swords, Trophy, Users, Sparkles, Menu, X, Shield, Search, Database, Zap } from "lucide-react";
 import { PlayerSearchBar } from "@/components/search/PlayerSearchBar";
 
@@ -33,22 +33,19 @@ export function SiteHeader({
     userAvatar: initialUserAvatar ?? null,
   });
 
-  // Automatically check active account on client mount if not passed as prop
-  useState(() => {
-    // sync initial props if changed
+  // Automatically check active account on client mount
+  useEffect(() => {
     if (initialAccountId && initialAccountId !== currentUser.accountId) {
       setCurrentUser({
         accountId: initialAccountId,
         userName: initialUserName ?? null,
         userAvatar: initialUserAvatar ?? null,
       });
+      return;
     }
-  });
 
-  // Client-side detection if account was not passed
-  useState(() => {
-    if (typeof window !== "undefined" && !currentUser.accountId) {
-      // 1. Check localStorage first for instant render
+    if (!currentUser.accountId) {
+      // 1. Check localStorage first
       try {
         const stored = localStorage.getItem("dota_active_account");
         if (stored) {
@@ -87,7 +84,7 @@ export function SiteHeader({
         })
         .catch(() => {});
     }
-  });
+  }, [initialAccountId, initialUserName, initialUserAvatar, currentUser.accountId]);
 
   const handleQuickSwitch = async (accId: number | string) => {
     const num = Number(accId);

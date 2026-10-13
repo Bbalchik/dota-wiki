@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllHeroes, heroIconUrl, getItemIconUrl, getItemName } from "@/lib/opendota";
+import { fetchAllHeroes, heroIconUrl, getItemIconUrl, getItemName, fetchItemPopularity } from "@/lib/opendota";
 import { resolveItemKey } from "@/lib/item-utils";
 import { estimatePositionFromHistory, POS_NAME_RU, POS_FULL_RU, type DotaPosition } from "@/lib/positions";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +38,8 @@ export interface RealPlayerMatch {
   last_hits?: number;
   lane_role?: number | null;
   rank_tier?: number | null;
+  match_type?: "pro" | "ranked" | "turbo" | "normal";
+  match_type_label?: string;
   final_items: Array<{ id: number; name: string; localizedName: string; icon: string }>;
   neutral_item?: { id: number; name: string; localizedName: string; icon: string } | null;
   starting_items: Array<{ name: string; localizedName: string; icon: string }>;
@@ -118,13 +120,16 @@ export async function GET(
     let localMatches: any[] = [];
     try {
       localMatches = await prisma.dotaMatch.findMany({
-        take: 300,
+        take: 400,
         orderBy: { startTime: "desc" },
         select: {
           matchId: true,
           duration: true,
           startTime: true,
           radiantWin: true,
+          gameMode: true,
+          lobbyType: true,
+          regionName: true,
           playersJson: true,
         },
       });
@@ -271,7 +276,27 @@ export async function GET(
           duration: m.duration,
         }) ?? (hero.roles.includes("Carry") ? 1 : hero.roles.includes("Support") ? 5 : 2);
 
-      if (realPlayerMatches.length < 10) {
+      const isProMatch =
+        m.lobbyType === 1 ||
+        m.gameMode === 2 ||
+        Boolean(m.regionName?.toLowerCase().includes("tournament"));
+      const isTurboMatch = m.gameMode === 23;
+      const matchType: "pro" | "ranked" | "turbo" | "normal" = isProMatch
+        ? "pro"
+        : isTurboMatch
+        ? "turbo"
+        : m.gameMode === 22
+        ? "ranked"
+        : "normal";
+      const matchTypeLabel = isProMatch
+        ? "🏆 Про-сцена"
+        : isTurboMatch
+        ? "⚡ Турбо"
+        : m.gameMode === 22
+        ? "🛡️ Рейтинг"
+        : "⚔️ Паблик";
+
+      if (realPlayerMatches.length < 15) {
         realPlayerMatches.push({
           match_id: Number(m.matchId),
           start_time: Math.floor(new Date(m.startTime).getTime() / 1000),
@@ -294,6 +319,8 @@ export async function GET(
           last_hits: p.last_hits,
           lane_role: p.lane_role,
           rank_tier: p.rank_tier,
+          match_type: matchType,
+          match_type_label: matchTypeLabel,
           final_items,
           neutral_item,
           starting_items,
@@ -354,12 +381,51 @@ export async function GET(
       return result;
     };
 
-    const itemBuild = {
+    // 1. Calculate public ranked item build from millions of public matches
+    const pubPopularity = await fetchItemPopularity(heroId).catch(() => null);
+
+    const pubCounts = {
+      start: new Map<number, number>(),
+      early: new Map<number, number>(),
+      mid: new Map<number, number>(),
+      late: new Map<number, number>(),
+    };
+
+    if (pubPopularity) {
+      for (const [idStr, cnt] of Object.entries(pubPopularity.start_game_items || {})) {
+        const id = Number(idStr);
+        if (id > 0) pubCounts.start.set(id, cnt);
+      }
+      for (const [idStr, cnt] of Object.entries(pubPopularity.early_game_items || {})) {
+        const id = Number(idStr);
+        if (id > 0) pubCounts.early.set(id, cnt);
+      }
+      for (const [idStr, cnt] of Object.entries(pubPopularity.mid_game_items || {})) {
+        const id = Number(idStr);
+        if (id > 0) pubCounts.mid.set(id, cnt);
+      }
+      for (const [idStr, cnt] of Object.entries(pubPopularity.late_game_items || {})) {
+        const id = Number(idStr);
+        if (id > 0) pubCounts.late.set(id, cnt);
+      }
+    }
+
+    const pubItemBuild = {
+      start: formatPhaseItems(pubCounts.start.size > 0 ? pubCounts.start : itemCounts.start, defaults.start, 6),
+      early: formatPhaseItems(pubCounts.early.size > 0 ? pubCounts.early : itemCounts.early, defaults.early, 6),
+      mid: formatPhaseItems(pubCounts.mid.size > 0 ? pubCounts.mid : itemCounts.mid, defaults.mid, 6),
+      late: formatPhaseItems(pubCounts.late.size > 0 ? pubCounts.late : itemCounts.late, defaults.late, 6),
+    };
+
+    // 2. Calculate pro tournament / high-MMR arena build from parsed replays
+    const proItemBuild = {
       start: formatPhaseItems(itemCounts.start, defaults.start, 6),
       early: formatPhaseItems(itemCounts.early, defaults.early, 6),
       mid: formatPhaseItems(itemCounts.mid, defaults.mid, 6),
       late: formatPhaseItems(itemCounts.late, defaults.late, 6),
     };
+
+    const itemBuild = pubCounts.mid.size > 0 ? pubItemBuild : proItemBuild;
 
     // 2. Extract hero abilities
     const hAbilities = heroAbilitiesMap[hero.name] || {};
@@ -423,6 +489,8 @@ export async function GET(
         iconUrl: heroIconUrl(hero.name),
       },
       itemBuild,
+      pubItemBuild,
+      proItemBuild,
       realPlayerMatches,
       abilities,
       talentTree,

@@ -29,6 +29,9 @@ export function getStratzToken(): string | null {
   if (typeof process !== "undefined" && process.env?.STRATZ_TOKEN && process.env.STRATZ_TOKEN.trim()) {
     return process.env.STRATZ_TOKEN.trim();
   }
+  if (typeof process !== "undefined" && process.env?.STRATZ_API_KEY && process.env.STRATZ_API_KEY.trim()) {
+    return process.env.STRATZ_API_KEY.trim();
+  }
   return null;
 }
 

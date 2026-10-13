@@ -1407,6 +1407,36 @@ export async function fetchHeroStats(): Promise<OpenDotaHeroStat[]> {
   return fallback;
 }
 
+export interface OpenDotaItemPopularity {
+  start_game_items: Record<string, number>;
+  early_game_items: Record<string, number>;
+  mid_game_items: Record<string, number>;
+  late_game_items: Record<string, number>;
+}
+
+export async function fetchItemPopularity(heroId: number): Promise<OpenDotaItemPopularity | null> {
+  const cacheKey = `item_pop_${heroId}.json`;
+  const cached = readCache<OpenDotaItemPopularity>(cacheKey, 86400_000);
+  if (cached) return cached;
+
+  if (!isRateLimitExceeded()) {
+    try {
+      const res = await safeOpenDotaFetch(`/heroes/${heroId}/itemPopularity`, { next: { revalidate: 86400 } });
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          writeCache(cacheKey, data);
+          return data;
+        }
+      }
+    } catch (e) {
+      console.warn(`Could not fetch itemPopularity for hero ${heroId}:`, e);
+    }
+  }
+
+  return readStaleCache<OpenDotaItemPopularity>(cacheKey);
+}
+
 export async function fetchProMatches(limit = 25): Promise<OpenDotaProMatch[]> {
   const cacheKey = `pro_matches_${limit}.json`;
   const cached = readCache<OpenDotaProMatch[]>(cacheKey, 600_000);
